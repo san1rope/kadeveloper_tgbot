@@ -3,10 +3,8 @@ from typing import Union
 
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
-from aiohttp import ClientSession
 
-from config import Config
-from tg_bot.db_models.quick_commands import DbUser
+from tg_bot.db_models.quick_commands import DbUser, DbOrder
 from tg_bot.handlers.start import cmd_start
 from tg_bot.keyboards.inline import InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
@@ -18,6 +16,7 @@ logger = logging.getLogger(__name__)
 router = Router()
 
 
+@router.callback_query(F.data == "continue_create_order")
 @router.callback_query(F.data == "order_feedbacks")
 async def choose_period(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
@@ -192,26 +191,25 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
             msg = await message.answer(text=text)
             return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
-        adverts_urls = input_text.split("\n")
-        adverts_urls = [i.split() for i in adverts_urls]
+        adverts_urls = []
+        for input_url in input_text.split("\n"):
+            adverts_urls.append(input_url.strip())
+
         await state.update_data(adverts_urls=adverts_urls)
 
     else:
         return
 
-    text_urls = ""
-    for i in adverts_urls:
-        text_urls += f"\n{i}"
-
     data = await state.get_data()
     price = data["pf"] * 4
 
+    text_urls = '\n'.join(adverts_urls)
     text = [
         "<b>📄 Создание ордера</b>\n",
-        f"<b>Введенные вами ссылки:{text_urls}</b>\n",
+        f"<b>Введенные вами ссылки:\n{text_urls}</b>\n",
         "<b>💴 Теперь вам нужно оплатить задачу!</b>"
         f"<b>Для оплаты задачи сделайте перевод на сумму {price} рублей</b>",
-        f"<b>⬇️ После оплаты используйте клавиатуру ниже</b>"
+        f"\n<b>⬇️ После оплаты используйте клавиатуру ниже</b>"
     ]
     markup = await Im.payment()
     await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
@@ -230,19 +228,18 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
         return await write_advert_url(message=callback, state=state, from_back_btn=True)
 
     elif cd == "payment_completed":
-        data = await state.get_data()
-        period = data["period"]
-        pf = data["pf"]
-        adverts_urls = data["adverts_urls"]
-
         db_user = await DbUser(tg_user_id=uid).select()
         if not db_user:
             db_user = await DbUser(tg_user_id=uid, balance=0).add()
 
             api_user = APIUser(telegram=callback.from_user.username, balance=0)
-            result = await APIInterface.add_new_user(api_user=api_user)
+            result = await APIInterface.add_or_update_new_user(api_user=api_user)
             if result["success"] is False:
-                logger.error("Не удалось добавить нового юзера в API!")
+                logger.error("Не удалось добавить/обновить нового юзера в API!")
+
+        data = await state.get_data()
+        db_order = await DbOrder(tg_user_id=uid, status=False, period=data["period"], pf=data["pf"],
+                                 adverts_urls=data["adverts_urls"]).add()
 
         text = [
             "<b>✅ Заказ создан!</b>\n",
@@ -252,3 +249,5 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
         ]
         markup = await Im.order_created()
         await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+
+        await state.clear()

@@ -4,7 +4,7 @@ from typing import Optional, Union, List
 
 from asyncpg import UniqueViolationError
 
-from schemas import *
+from .schemas import *
 
 logger = logging.getLogger(__name__)
 
@@ -96,10 +96,10 @@ class DbOrder:
                 return await q.where(Order.id == self.db_id).gino.first()
 
             elif self.tg_user_id is not None:
-                return await q.where(Order.tg_user_id == self.tg_user_id).gino.first()
+                return await q.where(Order.tg_user_id == self.tg_user_id).gino.all()
 
             elif self.status is not None:
-                return await q.where(Order.status == self.status).gino.first()
+                return await q.where(Order.status == self.status).gino.all()
 
             else:
                 return await q.gino.all()

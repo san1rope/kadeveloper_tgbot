@@ -8,3 +8,13 @@ class APIUser(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     balance: int
+
+
+class APIOrder(BaseModel):
+    telegram: Union[str, int]
+    link: str
+    title: str
+    category: Optional[str] = None
+    location: Optional[str] = None
+    spend: int
+    limit: int
