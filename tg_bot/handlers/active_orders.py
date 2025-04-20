@@ -78,13 +78,19 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
         await DbOrder(db_id=callback_data.order_id).update(status=3)
 
         api_order = APIOrder(
-            telegram=callback.from_user.username, link=order.advert_url, title="NULL",
-            location="NULL", spend=0, limit=0
-        )
+            telegram=uid, link=order.advert_url, title="title", category="cat1", location="location1", spend=0, limit=0)
         result = await APIInterface.add_or_update_new_task(api_order=api_order)
-        print(f"result update task stop = {result}")
+        if result["success"] is False:
+            logger.error("Failed to update the task in the API!")
 
-        text = [
-            "<b>✅ Вы успешно удалили заказ!</b>"
-        ]
+            text = [
+                "<b>🔴 Не удалось удалить заказ!</b>\n",
+                "<b>Попробуйте позже, либо обратитесь в тех. поддержку!</b>"
+            ]
+
+        else:
+            text = [
+                "<b>✅ Вы успешно удалили заказ!</b>"
+            ]
+
         await callback.message.edit_text(text="\n".join(text))

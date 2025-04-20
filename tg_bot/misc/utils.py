@@ -1,10 +1,10 @@
 import asyncio
 import logging
-from typing import Optional, Union
+from typing import Optional, Union, Tuple, Dict
 
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import InlineKeyboardMarkup
-from aiohttp import ClientSession
+from aiohttp import ClientSession, BasicAuth
 from bs4 import BeautifulSoup
 
 from config import Config
@@ -20,7 +20,7 @@ class Utils:
         return asyncio.run(func(*args, **kwargs))
 
     @staticmethod
-    async def parse_product_name(url: str) -> Optional[str]:
+    async def parse_advertisement(url: str):
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "accept-encoding": "gzip, deflate, br, zstd",
@@ -39,14 +39,20 @@ class Utils:
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
         }
 
+        proxy = "http://192.109.127.12:59100"
+        proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
+
         async with ClientSession() as session:
-            async with session.get(url=url, headers=headers, timeout=10) as response:
+            async with session.get(url=url, headers=headers, timeout=10, proxy=proxy,
+                                   proxy_auth=proxy_auth) as response:
                 answer = await response.text()
 
         soup = BeautifulSoup(answer, "lxml")
         product_name = soup.find("h1", {"itemprop": "name"}).text
+        category = soup.find("div", {"data-marker": "item-navigation"}).text.strip()
+        location = soup.find("div", {"itemprop": "address"}).text
 
-        return product_name
+        return product_name, category, location
 
     @staticmethod
     async def send_step_message(user_id: int, text: str, markup: Optional[InlineKeyboardMarkup] = None):

@@ -13,6 +13,7 @@ router = Router()
 
 
 @router.message(F.chat.type == enums.ChatType.PRIVATE, CommandStart())
+@router.callback_query(F.data == "back_from_order")
 @router.callback_query(F.data == "back_from_how_to_start")
 @router.callback_query(F.data == "back_from_questions_menu")
 @router.callback_query(F.data == "back_from_active_orders_menu")
@@ -35,5 +36,5 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
     ]
 
     active_orders = await DbOrder(tg_user_id=uid, status=0).select()
-    markup = await Im.start_menu(how_to_start_btn=not bool(len(active_orders)))
+    markup = await Im.start_menu(how_to_start_btn=not bool(active_orders))
     await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)

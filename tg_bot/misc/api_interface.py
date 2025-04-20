@@ -16,8 +16,8 @@ class APIInterface:
     headers = {
         "Content-Type": "text/plain; charset=UTF-8"
     }
-    proxy = "http://156.246.211.231:64170"
-    proxy_auth = BasicAuth(login="ttNkVLRS", password="63cYXNdr")
+    proxy = "http://192.109.127.12:59100"
+    proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
 
     @staticmethod
     async def encode_json_payload(payload: Dict) -> str:
@@ -49,7 +49,9 @@ class APIInterface:
             ) as response:
                 answer = await response.text()
 
-        return await cls.decode_json_answer(answer)
+        result = await cls.decode_json_answer(answer)
+        logger.info(f"Request to API | get_profile | {result}")
+        return result
 
     @classmethod
     async def add_or_update_new_task(cls, api_order: APIOrder) -> Dict:
@@ -67,4 +69,6 @@ class APIInterface:
             ) as response:
                 answer = await response.text()
 
-        return await cls.decode_json_answer(answer)
+        result = await cls.decode_json_answer(answer)
+        logger.info(f"Request to API | save_task | {result}")
+        return result

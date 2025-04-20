@@ -48,6 +48,7 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
         cd = message.data
 
         if cd == "cancel":
+            await state.clear()
             return await cmd_start(message=message)
 
         elif cd == "write_quantity":
@@ -236,37 +237,79 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
         db_user = await DbUser(tg_user_id=uid).select()
         if not db_user:
             await DbUser(tg_user_id=uid, balance=0).add()
-            api_user = APIUser(telegram=callback.from_user.username, balance=0)
+            api_user = APIUser(telegram=uid, balance=0, name="tguser", email="tg.user@gmail.com")
             result = await APIInterface.add_or_update_new_user(api_user=api_user)
-            print(f"add new user to api = {result}")
             if result["success"] is False:
-                logger.error("Не удалось добавить/обновить нового юзера в API!")
+                logger.error("Failed to add/update new user in API!")
+
+                text = [
+                    "<b>🔴 Не удалось добавить Вас в систему!</b>",
+                    "<b>Попробуйте ещё раз, либо обратитесь в поддержку!</b>"
+                ]
+                markup = await Im.back(callback_data="back_from_order")
+                await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+
+                return await state.clear()
 
         data = await state.get_data()
         period = data["period"]
         pf = data["pf"]
+        adverts_urls = data["adverts_urls"]
 
-        for adv_url in data["adverts_urls"]:
-            await DbOrder(tg_user_id=uid, status=False, period=data["period"], pf=data["pf"],
-                          advert_url=adv_url).add()
-            adv_name = await Ut.parse_product_name(url=adv_url)
-            print(f"adv_name = {adv_name}")
+        successful_created = 0
+        for adv_url in adverts_urls:
+            await DbOrder(tg_user_id=uid, status=0, period=data["period"], pf=data["pf"], advert_url=adv_url).add()
+            adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=adv_url)
             api_order = APIOrder(
-                telegram=callback.from_user.username, link=adv_url, title=adv_name, spend=pf, limit=period,
-                category="Роутеры", location="Абха"
-            )
+                telegram=uid, link=adv_url, title=adv_name, spend=pf, limit=period, category=adv_category,
+                location=adv_location)
             result = await APIInterface.add_or_update_new_task(api_order=api_order)
-            print(f"add new task to api = {result}")
             if result["success"] is False:
-                logger.error("Не удалось добавить/обновить задачу в API!")
+                logger.error("Failed to add/update task in API!")
 
-        text = [
-            "<b>✅ Заказ создан!</b>\n",
-            "<b>ℹ️ Вы можете следить за статусом выполнения в меню Активные заказы.</b>\n",
-            "<b>ℹ️ После подтверждения оплаты просмотры будут начаты и вы получите уведомление.</b>",
-            "\n<b>⬇️ Используйте клавиатуру ниже</b>"
-        ]
+                text = [
+                    f"<b>🔴 Не удалось создать заказ по {adv_url}</b>\n",
+                    "<b>Убедитесь, что у вас нету активных заказов с этим объявлением</b>",
+                    "<b>\nВ ином случае попробуйте позже, либо обратитесь в поддержку!</b>"
+                ]
+
+            else:
+                successful_created += 1
+                text = [
+                    "<b>✅ Заказ создан!</b>\n",
+                    f"<b>Объявление: {adv_url}</b>",
+                ]
+
+            msg = await callback.message.answer(text="\n".join(text))
+            await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+
+        if successful_created == len(adverts_urls):
+            text = [
+                "<b>✅ Все заказы были созданы!</b>\n",
+                "<b>ℹ️ Вы можете следить за статусом выполнения в меню Активные заказы.</b>\n",
+                "<b>ℹ️ После подтверждения оплаты просмотры будут начаты и вы получите уведомление.</b>",
+                "\n<b>⬇️ Используйте клавиатуру ниже</b>"
+            ]
+
+        elif successful_created and successful_created < len(adverts_urls):
+            text = [
+                "<b>ℹ️ Процесс создания заказов завершен!</b>\n",
+                "<b>Некоторые заказы не удалось создать!</b>",
+                "<b>Убедитесь, что вы не вставляли ссылки на объявления уже активных заказов</b>\n",
+                "<b>ℹ️ Вы можете следить за статусом выполнения в меню Активные заказы.</b>\n",
+                "<b>ℹ️ После подтверждения оплаты просмотры будут начаты и вы получите уведомление.</b>",
+                "\n<b>⬇️ Используйте клавиатуру ниже</b>"
+            ]
+
+        elif not successful_created:
+            text = [
+                "<b>🔴 Не удалось создать ни единого заказа!</b>",
+                "<b>Убедитесь, что вы не вставляли ссылки на объявления уже активных заказов, либо попробуйте позже</b>",
+                "\n<b>⬇️ Используйте клавиатуру ниже</b>"
+            ]
+
         markup = await Im.order_created()
-        await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+        msg = await callback.message.answer(text="\n".join(text), reply_markup=markup)
+        await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
         await state.clear()
