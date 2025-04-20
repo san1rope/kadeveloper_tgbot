@@ -4,7 +4,7 @@ from tg_bot.db_models.db_gino import TimedBaseModel
 
 
 class User(TimedBaseModel):
-    __tablename__ = "users"
+    __tablename__ = "users_kadeveloper_tgbot"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     tg_user_id = Column(BigInteger, nullable=False, primary_key=True)
@@ -14,7 +14,7 @@ class User(TimedBaseModel):
 
 
 class Order(TimedBaseModel):
-    __tablename__ = "orders"
+    __tablename__ = "orders_kadeveloper_tgbot"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     tg_user_id = Column(BigInteger, nullable=False, primary_key=True)
