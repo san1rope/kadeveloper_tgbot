@@ -258,7 +258,6 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
 
         successful_created = 0
         for adv_url in adverts_urls:
-            await DbOrder(tg_user_id=uid, status=0, period=data["period"], pf=data["pf"], advert_url=adv_url).add()
             adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=adv_url)
             api_order = APIOrder(
                 telegram=uid, link=adv_url, title=adv_name, spend=pf, limit=period, category=adv_category,
@@ -274,6 +273,7 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
                 ]
 
             else:
+                await DbOrder(tg_user_id=uid, status=0, period=data["period"], pf=data["pf"], advert_url=adv_url).add()
                 successful_created += 1
                 text = [
                     "<b>✅ Заказ создан!</b>\n",
