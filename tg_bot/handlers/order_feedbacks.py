@@ -202,7 +202,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         return
 
     data = await state.get_data()
-    price = data["pf"] * 4
+    price = (data["pf"] * data["period"]) * len(adverts_urls)
 
     text_urls = '\n'.join(adverts_urls)
     text = [
@@ -260,7 +260,7 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
         for adv_url in adverts_urls:
             adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=adv_url)
             api_order = APIOrder(
-                telegram=uid, link=adv_url, title=adv_name, spend=pf, limit=period, category=adv_category,
+                telegram=uid, link=adv_url, title=adv_name, spend=pf * period, limit=pf, category=adv_category,
                 location=adv_location)
             result = await APIInterface.add_or_update_new_task(api_order=api_order)
             if result["success"] is False:
