@@ -39,12 +39,11 @@ class Utils:
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
         }
 
-        proxy = "http://192.109.127.12:59100"
-        proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
+        # proxy = "http://192.109.127.12:59100"
+        # proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
 
         async with ClientSession() as session:
-            async with session.get(url=url, headers=headers, timeout=10, proxy=proxy,
-                                   proxy_auth=proxy_auth) as response:
+            async with session.get(url=url, headers=headers, timeout=10) as response:
                 answer = await response.text()
 
         soup = BeautifulSoup(answer, "lxml")

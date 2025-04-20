@@ -16,8 +16,8 @@ class APIInterface:
     headers = {
         "Content-Type": "text/plain; charset=UTF-8"
     }
-    proxy = "http://192.109.127.12:59100"
-    proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
+    # proxy = "http://192.109.127.12:59100"
+    # proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
 
     @staticmethod
     async def encode_json_payload(payload: Dict) -> str:
@@ -44,8 +44,7 @@ class APIInterface:
 
         async with ClientSession() as session:
             async with session.post(
-                    url=cls.url, headers=cls.headers, data=encoded_data, proxy=cls.proxy, proxy_auth=cls.proxy_auth,
-                    timeout=20
+                    url=cls.url, headers=cls.headers, data=encoded_data, timeout=20
             ) as response:
                 answer = await response.text()
 
@@ -64,8 +63,7 @@ class APIInterface:
 
         async with ClientSession() as session:
             async with session.post(
-                    url=cls.url, headers=cls.headers, data=encoded_data, proxy=cls.proxy, proxy_auth=cls.proxy_auth,
-                    timeout=20
+                    url=cls.url, headers=cls.headers, data=encoded_data, timeout=20
             ) as response:
                 answer = await response.text()
 
