@@ -42,11 +42,8 @@ class APIInterface:
             }
         )
 
-
         async with ClientSession() as session:
-            async with session.post(
-                    url=cls.url, headers=cls.headers, data=encoded_data, timeout=20
-            ) as response:
+            async with session.post(url=cls.url, headers=cls.headers, data=encoded_data, timeout=20) as response:
                 answer = await response.text()
 
         result = await cls.decode_json_answer(answer)
@@ -63,9 +60,7 @@ class APIInterface:
         )
 
         async with ClientSession() as session:
-            async with session.post(
-                    url=cls.url, headers=cls.headers, data=encoded_data, timeout=20
-            ) as response:
+            async with session.post(url=cls.url, headers=cls.headers, data=encoded_data, timeout=20) as response:
                 answer = await response.text()
 
         result = await cls.decode_json_answer(answer)

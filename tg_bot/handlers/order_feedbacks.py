@@ -276,7 +276,7 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
                 api_id = -1
                 for task in result["data"]["tasks"]:
                     if task["link"] == adv_url:
-                        api_id = task["id"]
+                        api_id = int(task["id"])
                         break
 
                 await DbOrder(tg_user_id=uid, api_id=api_id, status=0, period=data["period"], pf=data["pf"],
