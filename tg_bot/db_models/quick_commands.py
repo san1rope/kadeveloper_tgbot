@@ -2,6 +2,7 @@ import logging
 import traceback
 from typing import Optional, Union, List
 
+from sqlalchemy import and_
 from asyncpg import UniqueViolationError
 
 from .schemas import *
@@ -70,30 +71,33 @@ class DbUser:
 
 
 class DbOrder:
-    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, status: Optional[bool] = None,
-                 period: Optional[int] = None, pf: Optional[int] = None, adverts_urls: Optional[List[str]] = None):
+    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, status: Optional[int] = None,
+                 period: Optional[int] = None, pf: Optional[int] = None, advert_url: Optional[str] = None):
         self.db_id = db_id
         self.tg_user_id = tg_user_id
         self.status = status
         self.period = period
         self.pf = pf
-        self.adverts_urls = adverts_urls
+        self.advert_url = advert_url
 
     async def add(self) -> Union[bool, Order]:
         try:
             target = Order(tg_user_id=self.tg_user_id, status=self.status, period=self.period, pf=self.pf,
-                           adverts_urls=self.adverts_urls)
+                           advert_url=self.advert_url)
             return await target.create()
 
         except UniqueViolationError:
             return False
 
-    async def select(self):
+    async def select(self) -> Union[bool, Order, List[Order], None]:
         try:
             q = Order.query
 
             if self.db_id is not None:
                 return await q.where(Order.id == self.db_id).gino.first()
+
+            elif self.tg_user_id is not None and self.status is not None:
+                return await q.where(and_(Order.tg_user_id == self.tg_user_id, Order.status == self.status)).gino.all()
 
             elif self.tg_user_id is not None:
                 return await q.where(Order.tg_user_id == self.tg_user_id).gino.all()

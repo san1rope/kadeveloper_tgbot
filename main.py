@@ -1,11 +1,14 @@
 import asyncio
 import logging
+from multiprocessing import Process
 
 from aiogram.types import BotCommand
 
 from config import Config
 from tg_bot.db_models.db_gino import connect_to_db
 from tg_bot.handlers import routers
+from tg_bot.misc.orders_checker import start_orders_checker
+from tg_bot.misc.utils import Utils as Ut
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +27,10 @@ async def main():
         BotCommand(command="start", description="Start menu"),
     ]
     await Config.BOT.set_my_commands(commands=bot_commands)
-
     await Config.BOT.delete_webhook(drop_pending_updates=True)
+
+    Process(target=Ut.wrapper, args=(start_orders_checker,)).start()
+
     await Config.DISPATCHER.start_polling(Config.BOT, allowed_updates=Config.DISPATCHER.resolve_used_update_types())
 
 

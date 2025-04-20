@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Optional, Union
 
@@ -13,6 +14,10 @@ msg_to_delete = {"secondary": {}}
 
 
 class Utils:
+
+    @staticmethod
+    def wrapper(func, *args, **kwargs):
+        return asyncio.run(func(*args, **kwargs))
 
     @staticmethod
     async def parse_product_name(url: str) -> Optional[str]:

@@ -14,6 +14,8 @@ class Config:
     BOT = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     DISPATCHER = Dispatcher(storage=MemoryStorage())
     API_URL = os.getenv("API_URL").strip()
+    TELEGRAM_CHANNEL = os.getenv("TELEGRAM_CHANNEL").strip()
+    SUPPORT_TELEGRAM_URL = os.getenv("SUPPORT_TELEGRAM_URL").strip()
 
     DATABASE_CLEANUP = bool(int(os.getenv("DATABASE_CLEANUP")))
     DB_USER = os.getenv("DB_USER").strip()

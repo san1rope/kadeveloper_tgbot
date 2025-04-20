@@ -8,7 +8,7 @@ from tg_bot.db_models.quick_commands import DbUser, DbOrder
 from tg_bot.handlers.start import cmd_start
 from tg_bot.keyboards.inline import InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
-from tg_bot.misc.models import APIUser
+from tg_bot.misc.models import APIUser, APIOrder
 from tg_bot.misc.states import CreateOrder
 from tg_bot.misc.utils import Utils as Ut
 
@@ -228,18 +228,37 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
         return await write_advert_url(message=callback, state=state, from_back_btn=True)
 
     elif cd == "payment_completed":
+        text = [
+            "<b>Создаю заказ...</b>"
+        ]
+        await Ut.send_step_message(user_id=uid, text="\n".join(text))
+
         db_user = await DbUser(tg_user_id=uid).select()
         if not db_user:
-            db_user = await DbUser(tg_user_id=uid, balance=0).add()
-
+            await DbUser(tg_user_id=uid, balance=0).add()
             api_user = APIUser(telegram=callback.from_user.username, balance=0)
             result = await APIInterface.add_or_update_new_user(api_user=api_user)
+            print(f"add new user to api = {result}")
             if result["success"] is False:
                 logger.error("Не удалось добавить/обновить нового юзера в API!")
 
         data = await state.get_data()
-        db_order = await DbOrder(tg_user_id=uid, status=False, period=data["period"], pf=data["pf"],
-                                 adverts_urls=data["adverts_urls"]).add()
+        period = data["period"]
+        pf = data["pf"]
+
+        for adv_url in data["adverts_urls"]:
+            await DbOrder(tg_user_id=uid, status=False, period=data["period"], pf=data["pf"],
+                          advert_url=adv_url).add()
+            adv_name = await Ut.parse_product_name(url=adv_url)
+            print(f"adv_name = {adv_name}")
+            api_order = APIOrder(
+                telegram=callback.from_user.username, link=adv_url, title=adv_name, spend=pf, limit=period,
+                category="Роутеры", location="Абха"
+            )
+            result = await APIInterface.add_or_update_new_task(api_order=api_order)
+            print(f"add new task to api = {result}")
+            if result["success"] is False:
+                logger.error("Не удалось добавить/обновить задачу в API!")
 
         text = [
             "<b>✅ Заказ создан!</b>\n",

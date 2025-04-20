@@ -1,4 +1,21 @@
+from aiogram.filters.callback_data import CallbackData
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from config import Config
+
+
+class CommonQuestions(CallbackData, prefix="cq"):
+    question_id: int
+
+
+class OrderActions(CallbackData, prefix="oa"):
+    action: str
+    order_id: int
+
+
+class OrderActConfirmation(CallbackData, prefix="oac"):
+    action: str
+    order_id: int
 
 
 class InlineMarkups:
@@ -26,8 +43,8 @@ class InlineMarkups:
                     InlineKeyboardButton(text=cls.__btn_text_order_feedbacks, callback_data="order_feedbacks")
                 ],
                 [
-                    InlineKeyboardButton(text="Новости платформы", callback_data="platform_news"),
-                    InlineKeyboardButton(text="Есть вопрос", callback_data="ask_question")
+                    InlineKeyboardButton(text="📰 Новости платформы", url=Config.TELEGRAM_CHANNEL),
+                    InlineKeyboardButton(text="❔ Есть вопрос", callback_data="ask_question")
                 ]
             ]
         )
@@ -115,6 +132,57 @@ class InlineMarkups:
             inline_keyboard=[
                 [
                     InlineKeyboardButton(text=cls.__btn_text_back, callback_data=callback_data)
+                ]
+            ]
+        )
+
+    @classmethod
+    async def common_questions(cls) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Как работает накрутка ПФ",
+                                         callback_data=CommonQuestions(question_id=1).pack())
+                ],
+                [
+                    InlineKeyboardButton(text="Лучшая методика накрутки",
+                                         callback_data=CommonQuestions(question_id=2).pack())
+                ],
+                [
+                    InlineKeyboardButton(text="ПФ на объявления в аккаунте одним днём",
+                                         callback_data=CommonQuestions(question_id=3).pack())
+                ],
+                [
+                    InlineKeyboardButton(text="Задать вопрос", url=Config.SUPPORT_TELEGRAM_URL)
+                ],
+                [
+                    InlineKeyboardButton(text=cls.__btn_text_back, callback_data="back_from_questions_menu")
+                ]
+            ]
+        )
+
+    @classmethod
+    async def order_actions(cls, order_id: int) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Удалить",
+                                         callback_data=OrderActions(order_id=order_id, action="delete").pack())
+                ]
+            ]
+        )
+
+    @classmethod
+    async def order_confirmation(cls, order_id: int, action: str) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="Подтвердить",
+                                         callback_data=OrderActConfirmation(action=action, order_id=order_id).pack())
+                ],
+                [
+                    InlineKeyboardButton(text=cls.__btn_text_back,
+                                         callback_data=OrderActConfirmation(action="back", order_id=order_id).pack())
                 ]
             ]
         )
