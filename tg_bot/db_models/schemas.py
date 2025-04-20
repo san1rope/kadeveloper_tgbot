@@ -17,6 +17,7 @@ class Order(TimedBaseModel):
     __tablename__ = "orders_kadeveloper_tgbot"
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
+    api_id = Column(BigInteger, nullable=False, primary_key=True)
     tg_user_id = Column(BigInteger, nullable=False, primary_key=True)
     status = Column(Integer, nullable=False)
     period = Column(Integer, nullable=False)

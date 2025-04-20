@@ -42,6 +42,7 @@ class APIInterface:
             }
         )
 
+
         async with ClientSession() as session:
             async with session.post(
                     url=cls.url, headers=cls.headers, data=encoded_data, timeout=20

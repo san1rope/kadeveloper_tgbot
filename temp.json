@@ -1,27 +1,60 @@
 {
   'success': True,
-  'message': 'Задание на просмотр объявления <a href="https://www.avito.ru/novosibirsk/mototsikly_i_mototehnika/moped_suzuki_7319617516" target="_blank">Мопед сузуки</a> успешно сохранено. Установлен верхний предел в 10 просмотров и дневной лимит в 1 просмотров.',
+  'message': 'Задание на прос                                                                                                                                                             мотр объявления <a href="https://www.avito.ru/moskva/odezhda_obuv_aksessuary/pla                                                                                                                                                             te_v_grecheskom_stile_7350759051" target="_blank">title</a> успешно сохранено. У                                                                                                                                                             становлен верхний предел в 0 просмотров и дневной лимит в 0 просмотров.',
   'data': {
     'user': {
       'id': '511',
       'name': 'tguser',
       'telegram': '1643710214',
-      'email': 'tg.user@gmail.com',
+      'email': 't                                                                                                                                                             g.user@gmail.com',
       'avito_id': None,
       'balance': '0',
       'sum': '0',
-      'created_at': '2025-04-20 15:49:58',
-      'last_activity': '2025-04-20 16:08:06',
-      'accumulated_activity': '0'
+      'created_at': '                                                                                                                                                             2025-04-20 15:49:58',
+      'last_activity': '2025-04-20 21:12:13',
+      'accumulated_activ                                                                                                                                                             ity': '0'
     },
     'tasks': [
       {
+        'id': '31337',
+        'user_id': '511',
+        'link': 'https://www.avi                                                                                                                                                             to.ru/stavropol/remont_i_stroitelstvo/linoleum_dlya_sporta_ustoychiv_k_nagruzkam                                                                                                                                                             _i_vlage_7308184071',
+        'title': 'Линолеум для спорта  устойчив к нагрузкам и влаг                                                                                                                                                             е',
+        'category': 'ГлавнаяСтройматериалыОтделкаНапольные покрытияЛинолеум',
+        'locat                                                                                                                                                             ion': 'Ставропольский край, Ставрополь, ул. 45-я Параллель, 1р-н Промышленный',
+        'views': 0,
+        'spend': 10,
+        'limit': 1,
+        'created_at': '2025-04-20 16:17:45',
+        'compl                                                                                                                                                             eted_at': None,
+        'today': 0,
+        'yesterday': 0,
+        'week': 0
+      },
+      {
+        'id': '31336',
+        'user_id                                                                                                                                                             ': '511',
+        'link': 'https://www.avito.ru/novomichurinsk/odezhda_obuv_aksessuary/r                                                                                                                                                             ubashka_zhenskaya_7338065808',
+        'title': 'Рубашка женская',
+        'category': 'ГлавнаяЖ                                                                                                                                                             енская одеждаРубашки и блузки46 (M)',
+        'location': 'Рязанская обл., Пронский р-н,                                                                                                                                                              Новомичуринское городское поселение, Новомичуринск, мкр-н Д, 16Д',
+        'views': 0,
+        'spend': 10,
+        'limit': 1,
+        'created_at': '2025-04-20 16:17:44',
+        'completed_at': No
+        ne,
+        'today': 0,
+        'yesterday': 0,
+        'week': 0
+      },
+      {
         'id': '31335',
         'user_id': '511',
-        'link': 'https://www.avito.ru/novosibirsk/mototsikly_i_mototehnika/moped_suzuki_7319617516',
+        'l                                                                                                                                                             ink': 'https://www.avito.ru/novosibirsk/mototsikly_i_mototehnika/moped_suzuki_73                                                                                                                                                             19617516',
         'title': 'Мопед сузуки',
-        'category': 'ГлавнаяТранспортМотоциклы и мототехникаМопеды и скутеры',
-        'location': 'Новосибирская обл., Новосибирский р-н, Мочищенский сельсовет, дп. Мочище, Первомайская ул., 60',
+        'category': 'ГлавнаяТранспортМотоциклы и мот                                                                                                                                                             отехникаМопеды и скутеры',
+        'location': 'Новосибирская обл., Новосибирский р-н, М                                                                                                                                                             очищенский сельсовет, дп. Мочище, Первомайская ул., 60',
         'views': 0,
         'spend': 10,
         'limit': 1,
@@ -32,17 +65,33 @@
         'week': 0
       },
       {
-        'id': '31334',
+        'id': '31344',
         'user_id': '511',
-        'link': 'https://www.avito.ru/murino/odezhda_obuv_aksessuary/bryuki_kozhanye_7303351479',
-        'title': 'Брюки кожаные',
-        'category': 'ГлавнаяОдежда, обувь, аксессуарыЖенская одеждаБрюки44 (SM)',
-        'location': 'Всеволожский р-н',
+        'link': 'http                                                                                                                                                             s://www.avito.ru/moskva/odezhda_obuv_aksessuary/plate_v_grecheskom_stile_7350759                                                                                                                                                             051',
+        'title': 'title',
+        'category': 'cat1',
+        'location': 'location1',
         'views': 0,
-        'spend': 20,
-        'limit': 7,
+        'spend': 0,
+        'limit': 0,
+        'created_at': '2025-04-20 21:25:51',
+        'completed_at': '2                                                                                                                                                             025-04-20 21:28:19',
+        'today': 0,
+        'yesterday': 0,
+        'week': 0
+      },
+      {
+        'id': '31334',
+        'us                                                                                                                                                             er_id': '511',
+        'link': 'https://www.avito.ru/murino/odezhda_obuv_aksessuary/bryu                                                                                                                                                             ki_kozhanye_7303351479',
+        'title': 'title',
+        'category': 'cat1',
+        'location': 'loca                                                                                                                                                             tion1',
+        'views': 0,
+        'spend': 0,
+        'limit': 0,
         'created_at': '2025-04-20 16:08:07',
-        'completed_at': None,
+        'completed_at': '2025-04-20 16:20:04',
         'today': 0,
         'yesterday': 0,
         'week': 0
@@ -51,7 +100,7 @@
     'stats': {
       'users': 507,
       'active': 12,
-      'today': 42
+      'today': 46
     },
     'next_request': 5
   }

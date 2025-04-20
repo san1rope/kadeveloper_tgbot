@@ -74,8 +74,12 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
         await callback.message.edit_text(text="\n".join(text), reply_markup=markup)
 
     elif callback_data.action == "delete":
+        text = [
+            "<b>Удаляю заказ...</b>"
+        ]
+        await callback.message.edit_text(text="\n".join(text))
+
         order = await DbOrder(db_id=callback_data.order_id).select()
-        await DbOrder(db_id=callback_data.order_id).update(status=3)
 
         api_order = APIOrder(
             telegram=uid, link=order.advert_url, title="title", category="cat1", location="location1", spend=0, limit=0)
@@ -89,6 +93,7 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
             ]
 
         else:
+            await DbOrder(db_id=callback_data.order_id).update(status=3)
             text = [
                 "<b>✅ Вы успешно удалили заказ!</b>"
             ]

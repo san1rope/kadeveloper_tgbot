@@ -72,8 +72,10 @@ class DbUser:
 
 class DbOrder:
     def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, status: Optional[int] = None,
-                 period: Optional[int] = None, pf: Optional[int] = None, advert_url: Optional[str] = None):
+                 period: Optional[int] = None, pf: Optional[int] = None, advert_url: Optional[str] = None,
+                 api_id: Optional[int] = None):
         self.db_id = db_id
+        self.api_id = api_id
         self.tg_user_id = tg_user_id
         self.status = status
         self.period = period
@@ -83,7 +85,7 @@ class DbOrder:
     async def add(self) -> Union[bool, Order]:
         try:
             target = Order(tg_user_id=self.tg_user_id, status=self.status, period=self.period, pf=self.pf,
-                           advert_url=self.advert_url)
+                           advert_url=self.advert_url, api_id=self.api_id)
             return await target.create()
 
         except UniqueViolationError:
