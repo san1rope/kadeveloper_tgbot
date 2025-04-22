@@ -27,13 +27,18 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
         await message.answer()
         message = message.message
 
-    api_user = APIUser(telegram=uid)
+    text = [
+        "Получаю данные о пользователе..."
+    ]
+    msg = await Ut.send_step_message(user_id=uid, text="\n".join(text))
+
+    api_user = APIUser(telegram=uid, name="tg_user", email="tg.user@gmail.com")
     result = await APIInterface.add_or_update_new_user(api_user=api_user)
-    print(f"result = {result}")
+    balance = result['data']['user']['balance']
 
     username = message.from_user.username
     text = [
-        f"👋 Приветствую{f', {username}' if username else ''}! Баланс 0 рублей.\n",
+        f"👋 Приветствую{f', {username}' if username else ''}! Баланс {balance} рублей.\n",
         "• Супер безопасно! Для накрутки используются только настоящие активные аккаунты Авито, никаких фейковых аккаунтов.",
         "• Самая низкая в России! 4 рубля за 1 поведенческий фактор.",
         "• Качественные ПФ! Случайное выполнение нескольких действий, имитирующих действия пользователя - просмотр фото, описания, карты, телефона и т.п.",
@@ -43,4 +48,4 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
 
     active_orders = await DbOrder(tg_user_id=uid, status=0).select()
     markup = await Im.start_menu(how_to_start_btn=not bool(active_orders))
-    await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+    await msg.edit_text(text="\n".join(text), reply_markup=markup)
