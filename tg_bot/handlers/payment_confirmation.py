@@ -10,6 +10,7 @@ from tg_bot.db_models.schemas import Payment
 from tg_bot.keyboards.inline import PaymentConfirmation, InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
 from tg_bot.misc.models import APIOrder
+from tg_bot.misc.utils import Utils as Ut
 
 logger = logging.getLogger(__name__)
 router = Router()
@@ -78,7 +79,9 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
     await callback.message.edit_text(text="\n".join(text))
 
     try:
-        await Config.BOT.send_message(chat_id=payment.tg_user_id, text="\n".join(text_for_user), reply_markup=markup)
+        msg = await Config.BOT.send_message(chat_id=payment.tg_user_id, text="\n".join(text_for_user),
+                                            reply_markup=markup)
+        await Ut.add_msg_to_delete(user_id=payment.tg_user_id, msg_id=msg.message_id)
 
     except TelegramBadRequest:
         pass
