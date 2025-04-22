@@ -294,6 +294,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         ]
 
         for adv_data in adverts_urls:
+            print(f"adv_data = {adv_data}")
             text.append(f"{adverts_urls.index(adv_data) + 1}. {adv_data['url']}")
 
         text.extend([
