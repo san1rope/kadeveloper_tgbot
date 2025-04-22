@@ -168,6 +168,10 @@ class InlineMarkups:
                 [
                     InlineKeyboardButton(text="Удалить",
                                          callback_data=OrderActions(order_id=order_id, action="delete").pack())
+                ],
+                [
+                    InlineKeyboardButton(text=cls.__btn_text_back,
+                                         callback_data="back_from_questions_menu")
                 ]
             ]
         )

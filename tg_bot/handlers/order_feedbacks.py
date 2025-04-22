@@ -203,6 +203,9 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                 for url_sec in urls_list:
                     if await Ut.verify_advertisement_url(url=url_sec):
                         if url_sec not in adverts_urls:
+                            if "?" in url_sec:
+                                url_sec = url_sec[:url_sec.rfind("?")]
+
                             adverts_urls.append(url_sec)
 
                     else:
@@ -212,6 +215,9 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
             else:
                 if await Ut.verify_advertisement_url(url=input_url):
                     if input_url not in adverts_urls:
+                        if "?" in input_url:
+                            input_url = input_url[:input_url.rfind("?")]
+
                         adverts_urls.append(input_url.strip())
 
                 else:

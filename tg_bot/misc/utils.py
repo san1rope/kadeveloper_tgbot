@@ -118,7 +118,7 @@ class Utils:
 
     @staticmethod
     async def verify_advertisement_url(url: str) -> bool:
-        if (not url.startswith("https://www.avito.ru/")) or ("?" in url):
+        if not url.startswith("https://www.avito.ru/"):
             return False
 
         return True
