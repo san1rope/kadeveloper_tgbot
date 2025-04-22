@@ -28,7 +28,7 @@ async def start_orders_checker():
             if order.tg_user_id != last_user_id:
                 last_user_id = order.tg_user_id
                 api_user = APIUser(telegram=last_user_id, balance=0, name="tguser", email="tg.user@gmail.com")
-                user_data = await APIInterface.add_or_update_new_user(api_user=order)
+                user_data = await APIInterface.add_or_update_new_user(api_user=api_user)
 
             for task in user_data["data"]["tasks"]:
                 task_id = task["id"]

@@ -41,6 +41,7 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                 telegram=uid, link=ad["url"], title=ad["title"], spend=ad["pf"] * ad["period"], limit=ad["pf"],
                 category=ad["category"], location=ad["location"]
             )
+            print(f"api_order = {api_order}")
             result = await APIInterface.add_or_update_new_task(api_order=api_order)
             if result["success"] is False:
                 logger.error("Failed to add/update task in API!")
