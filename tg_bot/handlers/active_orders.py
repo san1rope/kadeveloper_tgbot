@@ -37,7 +37,7 @@ async def show_active_orders(callback: types.CallbackQuery):
             "\n⬇️ Для действия над заказом используйте клавиатуру."
         ]
         markup = await Im.order_actions(order_id=order.id)
-        msg = await callback.message.answer(text="\n".join(text), reply_markup=markup)
+        msg = await callback.message.answer(text="\n".join(text), reply_markup=markup, disable_web_page_preview=True)
         await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
 
