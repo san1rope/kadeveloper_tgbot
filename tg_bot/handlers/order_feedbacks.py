@@ -251,7 +251,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
                         if input_url in tasks_links:
                             text = [
-                                "🔴 Уже есть активная задача с этим объявлением!\n",
+                                "🔴 Уже есть активная задача с объявлением!\n",
+                                f"Ссылка: {input_url}\n"
                                 "Вы не можете создать 2 задачи на 1 объявление!"
                             ]
                             msg = await message.answer(text="\n".join(text), disable_web_page_preview=True)
