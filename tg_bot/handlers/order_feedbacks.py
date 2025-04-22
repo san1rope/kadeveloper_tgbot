@@ -288,7 +288,7 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
                     "<b>Убедитесь, что ссылка введена верно и объявление доступное!</b>",
                     "<b>\nВ ином случае попробуйте позже, либо обратитесь в поддержку!</b>"
                 ]
-                msg = await callback.message.answer(text="\n".join(text))
+                msg = await callback.message.answer(text="\n".join(text), disable_web_page_preview=True)
                 await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
                 continue
 
@@ -320,7 +320,7 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
                     f"<b>Объявление: {adv_url}</b>",
                 ]
 
-            msg = await callback.message.answer(text="\n".join(text))
+            msg = await callback.message.answer(text="\n".join(text), disable_web_page_preview=True)
             await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
         if successful_created == len(adverts_urls):
