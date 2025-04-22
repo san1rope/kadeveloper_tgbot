@@ -8,6 +8,8 @@ from aiogram.fsm.context import FSMContext
 from tg_bot.db_models.quick_commands import DbPayment
 from tg_bot.handlers.start import cmd_start
 from tg_bot.keyboards.inline import InlineMarkups as Im
+from tg_bot.misc.api_interface import APIInterface
+from tg_bot.misc.models import APIUser
 from tg_bot.misc.states import CreateOrder
 from tg_bot.misc.utils import Utils as Ut
 
@@ -179,6 +181,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
     uid = message.from_user.id
     logger.info(f"Handler called. {make_payment.__name__}. user_id={uid}")
 
+    data = await state.get_data()
+
     if isinstance(message, types.CallbackQuery):
         await message.answer()
         cd = message.data
@@ -191,6 +195,11 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
+
+        api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
+        userdata = await APIInterface.add_or_update_new_user(api_user=api_user)
+        tasks = userdata["data"]["tasks"]
+        tasks_links = [t["link"] for t in tasks]
 
         adverts_urls = []
         wrong_urls = []
@@ -205,6 +214,15 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                             if "?" in url_sec:
                                 url_sec = url_sec[:url_sec.rfind("?")]
 
+                            if url_sec in tasks_links:
+                                text = [
+                                    "🔴 Уже есть активная задача с этим объявлением!\n",
+                                    "Вы не можете создать 2 задачи на 1 объявление!"
+                                ]
+                                msg = await message.answer(text="\n".join(text), disable_web_page_preview=True)
+                                await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+                                continue
+
                             adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=url_sec)
                             if adv_name is None:
                                 text = [
@@ -217,7 +235,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                                 continue
 
                             adverts_urls.append({
-                                "url": url_sec, "title": adv_name, "category": adv_category, "location": adv_location
+                                "url": url_sec, "title": adv_name, "category": adv_category, "location": adv_location,
+                                "period": data["period"], "pf": data["pf"]
                             })
 
                     else:
@@ -229,6 +248,15 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                     if input_url not in adverts_urls:
                         if "?" in input_url:
                             input_url = input_url[:input_url.rfind("?")]
+
+                        if input_url in tasks_links:
+                            text = [
+                                "🔴 Уже есть активная задача с этим объявлением!\n",
+                                "Вы не можете создать 2 задачи на 1 объявление!"
+                            ]
+                            msg = await message.answer(text="\n".join(text), disable_web_page_preview=True)
+                            await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+                            return
 
                         adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=input_url)
                         if adv_name is None:
@@ -331,118 +359,3 @@ async def payment_confirmation(callback: types.CallbackQuery, state: FSMContext)
             ]
             msg = await callback.message.answer(text="\n".join(text), disable_web_page_preview=True)
             await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
-
-# @router.callback_query(CreateOrder.MakePayment)
-# async def create_process_has_completed(callback: types.CallbackQuery, state: FSMContext):
-#     await callback.answer()
-#     uid = callback.from_user.id
-#     logger.info(f"Handler called. {create_process_has_completed.__name__}. user_id={uid}")
-#
-#     cd = callback.data
-#     if cd == "back":
-#         return await write_advert_url(message=callback, state=state, from_back_btn=True)
-#
-#     elif cd == "payment_completed":
-#         text = [
-#             "Создаю заказ..."
-#         ]
-#         await Ut.send_step_message(user_id=uid, text="\n".join(text))
-#
-#         db_user = await DbUser(tg_user_id=uid).select()
-#         if not db_user:
-#             await DbUser(tg_user_id=uid, balance=0).add()
-#             api_user = APIUser(telegram=uid, balance=0, name="tguser", email="tg.user@gmail.com")
-#             result = await APIInterface.add_or_update_new_user(api_user=api_user)
-#             if result["success"] is False:
-#                 logger.error("Failed to add/update new user in API!")
-#
-#                 text = [
-#                     "🔴 Не удалось добавить Вас в систему!",
-#                     "Попробуйте ещё раз, либо обратитесь в поддержку!"
-#                 ]
-#                 markup = await Im.back(callback_data="back_from_order")
-#                 await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
-#
-#                 return await state.clear()
-#
-#         data = await state.get_data()
-#         period = data["period"]
-#         pf = data["pf"]
-#         adverts_urls = data["adverts_urls"]
-#
-#         successful_created = 0
-#         for adv_url in adverts_urls:
-#             adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=adv_url)
-#             if adv_name is None:
-#                 text = [
-#                     f"🔴 Не удалось получить данные о {adv_url}\n",
-#                     "Убедитесь, что ссылка введена верно и объявление доступное!",
-#                     "\nВ ином случае попробуйте позже, либо обратитесь в поддержку!"
-#                 ]
-#                 msg = await callback.message.answer(text="\n".join(text), disable_web_page_preview=True)
-#                 await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
-#                 continue
-#
-            # api_order = APIOrder(
-            #     telegram=uid, link=adv_url, title=adv_name, spend=pf * period, limit=pf, category=adv_category,
-            #     location=adv_location)
-#             result = await APIInterface.add_or_update_new_task(api_order=api_order)
-#             if result["success"] is False:
-#                 logger.error("Failed to add/update task in API!")
-#
-#                 text = [
-#                     f"🔴 Не удалось создать заказ по {adv_url}\n",
-#                     "Убедитесь, что у вас нету активных заказов с этим объявлением",
-#                     "\nВ ином случае попробуйте позже, либо обратитесь в поддержку!"
-#                 ]
-#
-#             else:
-#                 api_id = -1
-#                 for task in result["data"]["tasks"]:
-#                     if task["link"] == adv_url:
-#                         api_id = int(task["id"])
-#                         break
-#
-#                 await DbOrder(tg_user_id=uid, api_id=api_id, status=0, period=data["period"], pf=data["pf"],
-#                               advert_url=adv_url).add()
-#                 successful_created += 1
-#                 text = [
-#                     "✅ Заказ создан!\n",
-#                     f"Объявление: {adv_url}\n",
-#                     f"Количество дней: {data['period']}",
-#                     f"Количество ПФ: {data['pf']}"
-#                 ]
-#
-#             msg = await callback.message.answer(text="\n".join(text), disable_web_page_preview=True)
-#             await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
-#
-#         if successful_created == len(adverts_urls):
-#             text = [
-#                 "✅ Все заказы были созданы!\n",
-#                 "ℹ️ Вы можете следить за статусом выполнения в меню Активные заказы.\n",
-#                 "ℹ️ После подтверждения оплаты просмотры будут начаты и вы получите уведомление.",
-#                 "\n⬇️ Используйте клавиатуру ниже"
-#             ]
-#
-#         elif successful_created and successful_created < len(adverts_urls):
-#             text = [
-#                 "ℹ️ Процесс создания заказов завершен!\n",
-#                 "Некоторые заказы не удалось создать!",
-#                 "Убедитесь, что вы не вставляли ссылки на объявления уже активных заказов\n",
-#                 "ℹ️ Вы можете следить за статусом выполнения в меню Активные заказы.\n",
-#                 "ℹ️ После подтверждения оплаты просмотры будут начаты и вы получите уведомление.",
-#                 "\n⬇️ Используйте клавиатуру ниже"
-#             ]
-#
-#         elif not successful_created:
-#             text = [
-#                 "🔴 Не удалось создать ни единого заказа!",
-#                 "Убедитесь, что вы не вставляли ссылки на объявления уже активных заказов, либо попробуйте позже",
-#                 "\n⬇️ Используйте клавиатуру ниже"
-#             ]
-#
-#         markup = await Im.order_created()
-#         msg = await callback.message.answer(text="\n".join(text), reply_markup=markup)
-#         await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
-#
-#         await state.clear()
