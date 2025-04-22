@@ -32,7 +32,7 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
     ]
     msg = await Ut.send_step_message(user_id=uid, text="\n".join(text))
 
-    api_user = APIUser(telegram=uid, name="tg_user", email="tg.user@gmail.com")
+    api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
     result = await APIInterface.add_or_update_new_user(api_user=api_user)
     balance = result['data']['user']['balance']
 
