@@ -299,7 +299,6 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
             text.append(f"{adverts_urls.index(adv_data) + 1}. {adv_data['url']}")
 
         text.extend([
-            "\n💴 Теперь вам нужно оплатить задачу!"
             f"Для оплаты задачи сделайте перевод на сумму {price} рублей по номеру +7 (904) 084-44-92 (Альфабанк, Артём К)",
             f"\n⬇️ После оплаты нажмите кнопку Оплачено"
         ])
@@ -345,7 +344,8 @@ async def payment_confirmation(callback: types.CallbackQuery, state: FSMContext)
         data = await state.get_data()
 
         payment_data = {"data": data["adverts_urls"]}
-        payment = await DbPayment(tg_user_id=uid, confirmation=0, data=json.dumps(payment_data)).add()
+        payment = await DbPayment(tg_user_id=uid, confirmation=0, data=json.dumps(payment_data),
+                                  price=data["price"]).add()
         if payment:
             text = [
                 "✅ Ваша заявка была отправлена администратору!\n",

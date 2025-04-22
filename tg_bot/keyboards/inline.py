@@ -210,3 +210,19 @@ class InlineMarkups:
                 ]
             ]
         )
+
+    @classmethod
+    async def payment_confirmed(cls) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text=cls.__btn_text_active_orders, callback_data="active_orders")
+                ],
+                [
+                    InlineKeyboardButton(text="Создать новую задачу", callback_data="__btn_text_order_feedbacks")
+                ],
+                [
+                    InlineKeyboardButton(text="Меню", callback_data="back_from_order")
+                ]
+            ]
+        )

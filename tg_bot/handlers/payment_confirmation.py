@@ -7,7 +7,7 @@ from aiogram.exceptions import TelegramBadRequest
 from config import Config
 from tg_bot.db_models.quick_commands import DbPayment, DbOrder
 from tg_bot.db_models.schemas import Payment
-from tg_bot.keyboards.inline import PaymentConfirmation
+from tg_bot.keyboards.inline import PaymentConfirmation, InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
 from tg_bot.misc.models import APIOrder
 
@@ -27,12 +27,6 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
             "✅ Платеж успешно подтвержден! Создаю заказ..."
         ]
         await DbPayment(db_id=payment.id).update(confirmation=1)
-
-        text_for_user = [
-            "✅ Админ подтвердил Ваш платеж!\n",
-            "Во вкладке - 'Активные заказы' будут добавлены ваши объявления!"
-        ]
-
         await callback.message.edit_text(text="Создаю заказ...")
 
         order_data = json.loads(payment.data)
@@ -50,7 +44,7 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                     f"Ссылка: {ad['url']}",
                     f"\nОтвет сервера: {str(result)}"
                 ]
-                await callback.message.answer(text="\n".join(text_error))
+                return await callback.message.answer(text="\n".join(text_error))
 
             else:
                 api_id = -1
@@ -59,8 +53,15 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                         api_id = int(task["id"])
                         break
 
-                await DbOrder(tg_user_id=uid, api_id=api_id, status=0, period=ad["period"], pf=ad["pf"],
-                              advert_url=ad['url']).add()
+                db_order = await DbOrder(tg_user_id=uid, api_id=api_id, status=0, period=ad["period"], pf=ad["pf"],
+                                         advert_url=ad['url']).add()
+
+                text_for_user = [
+                    "✅ Платеж подтвежден!\n"
+                    f"Баланс пополнен на {payment.price} рублей. Задача #{db_order.id} запущена.\n",
+                    "⬇️ Используйте клавиатуру ниже"
+                ]
+                markup = await Im.payment_confirmed()
 
     else:
         text = [
@@ -72,11 +73,12 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
             "🔴 Админ указал, что платежа не было!\n",
             "Ваш заказ отменен."
         ]
+        markup = None
 
     await callback.message.edit_text(text="\n".join(text))
 
     try:
-        await Config.BOT.send_message(chat_id=payment.tg_user_id, text="\n".join(text_for_user))
+        await Config.BOT.send_message(chat_id=payment.tg_user_id, text="\n".join(text_for_user), reply_markup=markup)
 
     except TelegramBadRequest:
         pass

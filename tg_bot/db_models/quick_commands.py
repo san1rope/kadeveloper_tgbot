@@ -146,16 +146,18 @@ class DbOrder:
 
 
 class DbPayment:
-    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None,
+    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, price: Optional[int] = None,
                  confirmation: Optional[int] = None, data: Optional[str] = None):
         self.db_id = db_id
         self.tg_user_id = tg_user_id
+        self.price = price
         self.confirmation = confirmation
         self.data = data
 
     async def add(self) -> Union[bool, Payment]:
         try:
-            target = Payment(tg_user_id=self.tg_user_id, confirmation=self.confirmation, data=self.data)
+            target = Payment(tg_user_id=self.tg_user_id, confirmation=self.confirmation, data=self.data,
+                             price=self.price)
             return await target.create()
 
         except UniqueViolationError:

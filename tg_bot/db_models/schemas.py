@@ -32,6 +32,7 @@ class Payment(TimedBaseModel):
 
     id = Column(BigInteger, primary_key=True, autoincrement=True)
     tg_user_id = Column(BigInteger, nullable=False)
+    price = Column(Integer, nullable=False)
     confirmation = Column(Integer, nullable=False)
     data = Column(String, nullable=False)
 
