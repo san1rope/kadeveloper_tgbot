@@ -71,9 +71,11 @@ class DbUser:
 
 
 class DbOrder:
-    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, status: Optional[int] = None,
-                 period: Optional[int] = None, pf: Optional[int] = None, advert_url: Optional[str] = None,
-                 api_id: Optional[int] = None):
+    def __init__(
+            self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, status: Optional[int] = None,
+            period: Optional[int] = None, pf: Optional[int] = None, advert_url: Optional[str] = None,
+            api_id: Optional[int] = None
+    ):
         self.db_id = db_id
         self.api_id = api_id
         self.tg_user_id = tg_user_id
@@ -137,6 +139,55 @@ class DbOrder:
 
             elif isinstance(target, Order):
                 return await target.delete()
+
+        except Exception:
+            logger.error(traceback.format_exc())
+            return False
+
+
+class DbPayment:
+    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None,
+                 confirmation: Optional[int] = None, data: Optional[str] = None):
+        self.db_id = db_id
+        self.tg_user_id = tg_user_id
+        self.confirmation = confirmation
+        self.data = data
+
+    async def add(self) -> Union[bool, Payment]:
+        try:
+            target = Payment(tg_user_id=self.tg_user_id, confirmation=self.confirmation, data=self.data)
+            return await target.create()
+
+        except UniqueViolationError:
+            return False
+
+    async def select(self):
+        try:
+            q = Payment.query
+
+            if self.db_id is not None:
+                return await q.where(Payment.id == self.db_id).gino.first()
+
+            elif self.tg_user_id is not None:
+                return await q.where(Payment.tg_user_id == self.tg_user_id).gino.all()
+
+            elif self.confirmation:
+                return await q.where(Payment.confirmation == self.confirmation).gino.all()
+
+            else:
+                return await q.gino.all()
+
+        except Exception:
+            logger.error(traceback.format_exc())
+            return False
+
+    async def update(self, **kwargs) -> bool:
+        try:
+            if not kwargs:
+                return False
+
+            target = await self.select()
+            return await target.update(**kwargs).apply()
 
         except Exception:
             logger.error(traceback.format_exc())

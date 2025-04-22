@@ -13,6 +13,7 @@ class Config:
     BOT_TOKEN = os.getenv("BOT_TOKEN").strip()
     BOT = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     DISPATCHER = Dispatcher(storage=MemoryStorage())
+    ADMINS = list(map(int, os.getenv("ADMINS").strip().split(",")))
     API_URL = os.getenv("API_URL").strip()
     TELEGRAM_CHANNEL = os.getenv("TELEGRAM_CHANNEL").strip()
     SUPPORT_TELEGRAM_URL = os.getenv("SUPPORT_TELEGRAM_URL").strip()

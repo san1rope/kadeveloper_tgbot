@@ -25,3 +25,14 @@ class Order(TimedBaseModel):
     advert_url = Column(String, nullable=False)
 
     query: sql.Select
+
+
+class Payment(TimedBaseModel):
+    __tablename__ = "payments_kadeveloper_tgbot"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    tg_user_id = Column(BigInteger, nullable=False)
+    confirmation = Column(Integer, nullable=False)
+    data = Column(String, nullable=False)
+
+    query: sql.Select

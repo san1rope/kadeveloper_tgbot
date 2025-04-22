@@ -18,6 +18,11 @@ class OrderActConfirmation(CallbackData, prefix="oac"):
     order_id: int
 
 
+class PaymentConfirmation(CallbackData, prefix="pc"):
+    confirm: bool
+    payment_id: int
+
+
 class InlineMarkups:
     __btn_text_active_orders = "❇️ Активные заказы"
     __btn_text_back = "⬅️ Назад"
@@ -187,6 +192,21 @@ class InlineMarkups:
                 [
                     InlineKeyboardButton(text=cls.__btn_text_back,
                                          callback_data=OrderActConfirmation(action="back", order_id=order_id).pack())
+                ]
+            ]
+        )
+
+    @classmethod
+    async def payment_confirmation(cls, payment_id: int) -> InlineKeyboardMarkup:
+        return InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(text="✅ Подтверждаю оплату",
+                                         callback_data=PaymentConfirmation(confirm=True, payment_id=payment_id).pack())
+                ],
+                [
+                    InlineKeyboardButton(text="🔴 Оплаты не было",
+                                         callback_data=PaymentConfirmation(confirm=False, payment_id=payment_id).pack())
                 ]
             ]
         )

@@ -6,6 +6,7 @@ from aiogram.filters import CommandStart
 
 from tg_bot.db_models.quick_commands import DbOrder
 from tg_bot.keyboards.inline import InlineMarkups as Im
+from tg_bot.misc.models import APIUser
 from tg_bot.misc.utils import Utils as Ut
 
 logger = logging.getLogger(__name__)
@@ -24,6 +25,9 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
     if isinstance(message, types.CallbackQuery):
         await message.answer()
         message = message.message
+
+    api_user = APIUser(telegram=uid)
+    print(f"api_user = {api_user}")
 
     username = message.from_user.username
     text = [

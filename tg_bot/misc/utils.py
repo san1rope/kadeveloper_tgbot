@@ -1,13 +1,15 @@
 import asyncio
 import logging
-from typing import Optional, Union, Tuple, Dict
+from typing import Optional, Union
 
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import InlineKeyboardMarkup
-from aiohttp import ClientSession, BasicAuth
+from aiohttp import ClientSession
 from bs4 import BeautifulSoup
 
 from config import Config
+from tg_bot.db_models.schemas import Payment
+from tg_bot.keyboards.inline import InlineMarkups as Im
 
 logger = logging.getLogger(__name__)
 msg_to_delete = {"secondary": {}}
@@ -45,11 +47,11 @@ class Utils:
                     answer = await response.text()
 
             soup = BeautifulSoup(answer, "lxml")
-            product_name = soup.find("h1", {"itemprop": "name"}).text
+            name = soup.find("h1", {"itemprop": "name"}).text
             category = soup.find("div", {"data-marker": "item-navigation"}).text.strip()
             location = soup.find("div", {"itemprop": "address"}).text
 
-            return product_name, category, location
+            return name, category, location
 
         except Exception as ex:
             if retries <= 0:
@@ -122,3 +124,12 @@ class Utils:
             return False
 
         return True
+
+    @staticmethod
+    async def send_payment_confirmation_to_admins(payment: Payment, price: int):
+        text = [
+            "❇️ Поступил новый заказ!\n",
+            f"Была произведена оплата на сумму {price} рублей!\n",
+            "Проверьте платеж и подтвердите создание заказа"
+        ]
+        markup = await Im.
