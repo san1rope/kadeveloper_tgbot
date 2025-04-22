@@ -195,6 +195,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
+        print(f"input_text = {input_text}")
 
         api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
         userdata = await APIInterface.add_or_update_new_user(api_user=api_user)
@@ -271,7 +272,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                             return
 
                         adverts_urls.append({
-                            "url": input_url, "title": adv_name, "category": adv_category, "location": adv_location
+                            "url": input_url, "title": adv_name, "category": adv_category, "location": adv_location,
+                            "period": data["period"], "pf": data["pf"]
                         })
 
                 else:
