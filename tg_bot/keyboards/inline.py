@@ -105,7 +105,7 @@ class InlineMarkups:
         return InlineKeyboardMarkup(
             inline_keyboard=[
                 [
-                    InlineKeyboardButton(text="💴 Оплатил", callback_data="payment_completed")
+                    InlineKeyboardButton(text="💴 Оплачено", callback_data="payment_completed")
                 ],
                 [
                     InlineKeyboardButton(text=cls.__btn_text_back, callback_data="back")

@@ -34,7 +34,7 @@ async def show_active_orders(callback: types.CallbackQuery):
             f"Количество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
             f"Объявление: {order.advert_url}",
-            "\n⬇️ Для дествия над заказом, используйте клавиатуру"
+            "\n⬇️ Для действия над заказом используйте клавиатуру."
         ]
         markup = await Im.order_actions(order_id=order.id)
         msg = await callback.message.answer(text="\n".join(text), reply_markup=markup)
@@ -68,7 +68,7 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
             f"Количество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
             f"Объявление: {order.advert_url}",
-            "\n⬇️ Для дествия над заказом, используйте клавиатуру"
+            "\n⬇️ Для действия над заказом используйте клавиатуру."
         ]
         markup = await Im.order_actions(order_id=order.id)
         await callback.message.edit_text(text="\n".join(text), reply_markup=markup)
@@ -95,7 +95,7 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
         else:
             await DbOrder(db_id=callback_data.order_id).update(status=3)
             text = [
-                "✅ Вы успешно удалили заказ!"
+                f"✅ Вы успешно удалили заказ #{callback_data.order_id}!"
             ]
 
         await callback.message.edit_text(text="\n".join(text))

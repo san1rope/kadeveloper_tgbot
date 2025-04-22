@@ -115,3 +115,10 @@ class Utils:
             msg_to_delete[user_id].clear()
         except KeyError:
             return
+
+    @staticmethod
+    async def verify_advertisement_url(url: str) -> bool:
+        if (not url.startswith("https://www.avito.ru/")) or ("?" in url):
+            return False
+
+        return True

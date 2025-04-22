@@ -197,14 +197,26 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         wrong_urls = []
         for input_url in input_text.split("\n"):
             input_url = input_url.strip()
-            if input_url in adverts_urls or input_url in wrong_urls:
-                continue
 
-            if (not input_url.startswith("https://www.avito.ru/")) or ("?" in input_url):
-                wrong_urls.append(input_url)
-                continue
+            urls_list = input_url.split(" ")
+            if len(urls_list) > 1:
+                for url_sec in urls_list:
+                    if await Ut.verify_advertisement_url(url=url_sec):
+                        if url_sec not in adverts_urls:
+                            adverts_urls.append(url_sec)
 
-            adverts_urls.append(input_url.strip())
+                    else:
+                        if url_sec not in wrong_urls:
+                            wrong_urls.append(url_sec)
+
+            else:
+                if await Ut.verify_advertisement_url(url=input_url):
+                    if input_url not in adverts_urls:
+                        adverts_urls.append(input_url.strip())
+
+                else:
+                    if input_url not in wrong_urls:
+                        wrong_urls.append(input_url)
 
         await state.update_data(adverts_urls=adverts_urls)
 
@@ -215,28 +227,33 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
     price = (data["pf"] * data["period"]) * len(adverts_urls)
 
     if adverts_urls:
-        text_urls = '\n'.join(adverts_urls)
         text = [
             "📄 Создание ордера\n",
-            f"🖊 Введенные вами ссылки:\n{text_urls}\n",
-            "💴 Теперь вам нужно оплатить задачу!"
-            f"Для оплаты задачи сделайте перевод на сумму {price} рублей",
-            f"\n⬇️ После оплаты используйте клавиатуру ниже"
+            f"🖊 Введенные вами ссылки:",
         ]
+
+        for url in adverts_urls:
+            text.append(f"{adverts_urls.index(url) + 1}. {url}")
+
+        text.extend([
+            "\n💴 Теперь вам нужно оплатить задачу!"
+            f"Для оплаты задачи сделайте перевод на сумму {price} рублей по номеру +7 (904) 084-44-92 (Альфабанк, Артём К)",
+            f"\n⬇️ После оплаты нажмите кнопку Оплачено"
+        ])
+
         if wrong_urls:
-            print(f"wrong_urls = {wrong_urls}")
             text_wrong_urls = [
                 "🔴 Остальные ссылки были введены в неверном формате!",
-                "💭 Ссылка должна начинаться на https://avito.ru/ и не должна иметь параметров (?, &)",
-                "\nℹ️ Что-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)\n"
+                "💭 Ссылка должна начинаться на https://avito.ru/",
+                "\nℹ️ Чтобы вставить 2 и более ссылки, используйте перенос строки (Ctrl + Enter) или пробел (Space)\n"
             ]
             text.insert(2, "\n".join(text_wrong_urls))
 
     else:
         text = [
-            "🔴 Вы вставили ссылки в неверном формате!\n",
-            "💭 Ссылка должна начинаться на https://avito.ru/ и не должна иметь параметров (?, &)",
-            "\nℹ️ Что-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)"
+            "🔴 Ссылка не распознана!\n",
+            "💭 Ссылка должна начинаться на https://avito.ru/",
+            "\nℹ️ Чтобы вставить 2 и более ссылки, используйте перенос строки (Ctrl + Enter) или пробел (Space)"
         ]
         msg = await message.answer(text="\n".join(text), disable_web_page_preview=True)
         return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
@@ -323,7 +340,9 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
                 successful_created += 1
                 text = [
                     "✅ Заказ создан!\n",
-                    f"Объявление: {adv_url}",
+                    f"Объявление: {adv_url}\n",
+                    f"Количество дней: {data['period']}",
+                    f"Количество ПФ: {data['pf']}"
                 ]
 
             msg = await callback.message.answer(text="\n".join(text), disable_web_page_preview=True)
