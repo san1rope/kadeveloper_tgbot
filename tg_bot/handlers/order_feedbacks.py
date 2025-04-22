@@ -292,8 +292,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
             f"🖊 Введенные вами ссылки:",
         ]
 
-        for url in adverts_urls:
-            text.append(f"{adverts_urls.index(url) + 1}. {url}")
+        for adv_data in adverts_urls:
+            text.append(f"{adverts_urls.index(adv_data) + 1}. {adv_data['url']}")
 
         text.extend([
             "\n💴 Теперь вам нужно оплатить задачу!"
