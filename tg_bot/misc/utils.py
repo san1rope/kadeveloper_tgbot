@@ -19,8 +19,8 @@ class Utils:
     def wrapper(func, *args, **kwargs):
         return asyncio.run(func(*args, **kwargs))
 
-    @staticmethod
-    async def parse_advertisement(url: str):
+    @classmethod
+    async def parse_advertisement(cls, url: str, retries: int = 3):
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "accept-encoding": "gzip, deflate, br, zstd",
@@ -39,19 +39,24 @@ class Utils:
             "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/132.0.0.0 Safari/537.36 OPR/117.0.0.0"
         }
 
-        # proxy = "http://192.109.127.12:59100"
-        # proxy_auth = BasicAuth(login="valetinles", password="f5bay87SBb")
+        try:
+            async with ClientSession() as session:
+                async with session.get(url=url, headers=headers, timeout=10) as response:
+                    answer = await response.text()
 
-        async with ClientSession() as session:
-            async with session.get(url=url, headers=headers, timeout=10) as response:
-                answer = await response.text()
+            soup = BeautifulSoup(answer, "lxml")
+            product_name = soup.find("h1", {"itemprop": "name"}).text
+            category = soup.find("div", {"data-marker": "item-navigation"}).text.strip()
+            location = soup.find("div", {"itemprop": "address"}).text
 
-        soup = BeautifulSoup(answer, "lxml")
-        product_name = soup.find("h1", {"itemprop": "name"}).text
-        category = soup.find("div", {"data-marker": "item-navigation"}).text.strip()
-        location = soup.find("div", {"itemprop": "address"}).text
+            return product_name, category, location
 
-        return product_name, category, location
+        except Exception as ex:
+            if retries <= 0:
+                return None, None, None
+
+            logger.error(f"Не удалось спарсить объявление! | Осталось попыток: {retries} | {url} | {ex}")
+            return await cls.parse_advertisement(url=url, retries=retries - 1)
 
     @staticmethod
     async def send_step_message(user_id: int, text: str, markup: Optional[InlineKeyboardMarkup] = None):

@@ -187,10 +187,6 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
-        # if not input_text.startswith("https://"):
-        #     text = "<b>🔴 Вы ввели неверные данные! Нужно вставлять ссылки на объявления!\nЧто-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)</b>"
-        #     msg = await message.answer(text=text)
-        #     return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
         adverts_urls = []
         wrong_urls = []
@@ -286,6 +282,16 @@ async def create_process_has_completed(callback: types.CallbackQuery, state: FSM
         successful_created = 0
         for adv_url in adverts_urls:
             adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=adv_url)
+            if adv_name is None:
+                text = [
+                    f"<b>🔴 Не удалось получить данные о {adv_url}</b>\n",
+                    "<b>Убедитесь, что ссылка введена верно и объявление доступное!</b>",
+                    "<b>\nВ ином случае попробуйте позже, либо обратитесь в поддержку!</b>"
+                ]
+                msg = await callback.message.answer(text="\n".join(text))
+                await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+                continue
+
             api_order = APIOrder(
                 telegram=uid, link=adv_url, title=adv_name, spend=pf * period, limit=pf, category=adv_category,
                 location=adv_location)
