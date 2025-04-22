@@ -201,6 +201,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         tasks = userdata["data"]["tasks"]
         tasks_links = [t["link"] for t in tasks]
 
+        is_exist_texts = []
         adverts_urls = []
         wrong_urls = []
         for input_url in input_text.split("\n"):
@@ -219,8 +220,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                                     "🔴 Уже есть активная задача с этим объявлением!\n",
                                     "Вы не можете создать 2 задачи на 1 объявление!"
                                 ]
-                                msg = await message.answer(text="\n".join(text), disable_web_page_preview=True)
-                                await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+                                is_exist_texts.append(text)
                                 continue
 
                             adv_name, adv_category, adv_location = await Ut.parse_advertisement(url=url_sec)
@@ -273,7 +273,6 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                         adverts_urls.append({
                             "url": input_url, "title": adv_name, "category": adv_category, "location": adv_location
                         })
-                        adverts_urls.append(input_url.strip())
 
                 else:
                     if input_url not in wrong_urls:
@@ -322,6 +321,9 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
     markup = await Im.payment()
     await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+    for ex_text in is_exist_texts:
+        msg = await message.answer(text="\n".join(ex_text), disable_web_page_preview=True)
+        await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
     await state.update_data(price=price)
     await state.set_state(CreateOrder.MakePayment)
