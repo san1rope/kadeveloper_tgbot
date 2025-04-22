@@ -21,20 +21,20 @@ async def show_active_orders(callback: types.CallbackQuery):
     db_orders = await DbOrder(tg_user_id=uid, status=0).select()
 
     text_main = [
-        "<b>❇️ Активные заказы</b>\n",
-        f"<b>Активных заказов: {len(db_orders)}</b>"
-        "\n<b>⬇️ Для возвращения, используйте клавиатуру</b>"
+        "❇️ Активные заказы\n",
+        f"Активных заказов: {len(db_orders)}"
+        "\n⬇️ Для возвращения, используйте клавиатуру"
     ]
     markup_main = await Im.back(callback_data="back_from_active_orders_menu")
     await Ut.send_step_message(user_id=uid, text="\n".join(text_main), markup=markup_main)
 
     for order in db_orders:
         text = [
-            f"<b>Заказ #{order.id}</b>\n",
-            f"<b>Количество дней: {order.period}</b>",
-            f"<b>Количество ПФ: {order.pf}</b>",
-            f"<b>Объявление: {order.advert_url}</b>",
-            "\n<b>⬇️ Для дествия над заказом, используйте клавиатуру</b>"
+            f"Заказ #{order.id}\n",
+            f"Количество дней: {order.period}",
+            f"Количество ПФ: {order.pf}",
+            f"Объявление: {order.advert_url}",
+            "\n⬇️ Для дествия над заказом, используйте клавиатуру"
         ]
         markup = await Im.order_actions(order_id=order.id)
         msg = await callback.message.answer(text="\n".join(text), reply_markup=markup)
@@ -49,7 +49,7 @@ async def order_actions(callback: types.CallbackQuery, callback_data: OrderActio
 
     if callback_data.action == "delete":
         text = [
-            "<b>Вы действительно желаете удалить Ваш заказ?</b>"
+            "Вы действительно желаете удалить Ваш заказ?"
         ]
         markup = await Im.order_confirmation(order_id=callback_data.order_id, action=callback_data.action)
         await callback.message.edit_text(text="\n".join(text), reply_markup=markup)
@@ -64,18 +64,18 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
     if callback_data.action == "back":
         order = await DbOrder(db_id=callback_data.order_id).select()
         text = [
-            f"<b>Заказ #{order.id}</b>\n",
-            f"<b>Количество дней: {order.period}</b>",
-            f"<b>Количество ПФ: {order.pf}</b>",
-            f"<b>Объявление: {order.advert_url}</b>",
-            "\n<b>⬇️ Для дествия над заказом, используйте клавиатуру</b>"
+            f"Заказ #{order.id}\n",
+            f"Количество дней: {order.period}",
+            f"Количество ПФ: {order.pf}",
+            f"Объявление: {order.advert_url}",
+            "\n⬇️ Для дествия над заказом, используйте клавиатуру"
         ]
         markup = await Im.order_actions(order_id=order.id)
         await callback.message.edit_text(text="\n".join(text), reply_markup=markup)
 
     elif callback_data.action == "delete":
         text = [
-            "<b>Удаляю заказ...</b>"
+            "Удаляю заказ..."
         ]
         await callback.message.edit_text(text="\n".join(text))
 
@@ -88,14 +88,14 @@ async def confirm_order_act(callback: types.CallbackQuery, callback_data: OrderA
             logger.error("Failed to update the task in the API!")
 
             text = [
-                "<b>🔴 Не удалось удалить заказ!</b>\n",
-                "<b>Попробуйте позже, либо обратитесь в тех. поддержку!</b>"
+                "🔴 Не удалось удалить заказ!\n",
+                "Попробуйте позже, либо обратитесь в тех. поддержку!"
             ]
 
         else:
             await DbOrder(db_id=callback_data.order_id).update(status=3)
             text = [
-                "<b>✅ Вы успешно удалили заказ!</b>"
+                "✅ Вы успешно удалили заказ!"
             ]
 
         await callback.message.edit_text(text="\n".join(text))
