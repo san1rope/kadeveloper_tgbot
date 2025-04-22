@@ -1,6 +1,5 @@
 import json
 import logging
-from gc import callbacks
 from typing import Union
 
 from aiogram import Router, F, types

@@ -132,4 +132,11 @@ class Utils:
             f"Была произведена оплата на сумму {price} рублей!\n",
             "Проверьте платеж и подтвердите создание заказа"
         ]
-        markup = await Im.
+        markup = await Im.payment_confirmation(payment_id=payment.id)
+
+        for admin_id in Config.ADMINS:
+            try:
+                await Config.BOT.send_message(chat_id=admin_id, text="\n".join(text), reply_markup=markup)
+
+            except TelegramBadRequest:
+                logger.error(f"Failed to send message to admin with id {admin_id}!")
