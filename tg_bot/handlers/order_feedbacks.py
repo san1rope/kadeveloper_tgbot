@@ -187,13 +187,22 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
-        if not input_text.startswith("https://"):
-            text = "<b>🔴 Вы ввели неверные данные! Нужно вставлять ссылки на объявления!\nЧто-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)</b>"
-            msg = await message.answer(text=text)
-            return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+        # if not input_text.startswith("https://"):
+        #     text = "<b>🔴 Вы ввели неверные данные! Нужно вставлять ссылки на объявления!\nЧто-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)</b>"
+        #     msg = await message.answer(text=text)
+        #     return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
         adverts_urls = []
+        wrong_urls = []
         for input_url in input_text.split("\n"):
+            input_url = input_url.strip()
+            if input_url in adverts_urls or input_url in wrong_urls:
+                continue
+
+            if (not input_url.startswith("https://www.avito.ru/")) or ("?" in input_url):
+                wrong_urls.append(input_url)
+                continue
+
             adverts_urls.append(input_url.strip())
 
         await state.update_data(adverts_urls=adverts_urls)
@@ -204,14 +213,32 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
     data = await state.get_data()
     price = (data["pf"] * data["period"]) * len(adverts_urls)
 
-    text_urls = '\n'.join(adverts_urls)
-    text = [
-        "<b>📄 Создание ордера</b>\n",
-        f"<b>Введенные вами ссылки:\n{text_urls}</b>\n",
-        "<b>💴 Теперь вам нужно оплатить задачу!</b>"
-        f"<b>Для оплаты задачи сделайте перевод на сумму {price} рублей</b>",
-        f"\n<b>⬇️ После оплаты используйте клавиатуру ниже</b>"
-    ]
+    if adverts_urls:
+        text_urls = '\n'.join(adverts_urls)
+        text = [
+            "<b>📄 Создание ордера</b>\n",
+            f"<b>Введенные вами ссылки:\n{text_urls}</b>\n",
+            "<b>💴 Теперь вам нужно оплатить задачу!</b>"
+            f"<b>Для оплаты задачи сделайте перевод на сумму {price} рублей</b>",
+            f"\n<b>⬇️ После оплаты используйте клавиатуру ниже</b>"
+        ]
+        if wrong_urls:
+            text_wrong_urls = [
+                "<b>Остальные ссылки были введены в неверном формате!</b>",
+                "<b>Ссылка должна начинаться на https://avito.ru/ и не должна иметь параметров (?, &)</b>",
+                "<b>\nЧто-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)</b>\n"
+            ]
+            text.insert(2, "\n".join(text_wrong_urls))
+
+    else:
+        text = [
+            "<b>🔴 Вы вставили ссылки в неверном формате!</b>\n",
+            "<b>Ссылка должна начинаться на https://avito.ru/ и не должна иметь параметров (?, &)</b>",
+            "<b>\nЧто-бы вставить 2 и больше ссылок, нужно использовать перенос строки (Ctrl + Enter)</b>"
+        ]
+        msg = await message.answer(text="\n".join(text))
+        return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
+
     markup = await Im.payment()
     await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
 
