@@ -35,8 +35,8 @@ async def start_orders_checker():
                     continue
 
             for task in user_data["data"]["tasks"]:
-                print(f"task = {task}")
-                if task["id"] == order.api_id and task["views"] == task["spend"]:
+                print(f"task = {str(task)[:20]}")
+                if task["link"] == order.advert_url and task["views"] == task["spend"]:
                     print("COMPLETE")
                     await DbOrder(db_id=order.id).update(status=1)
                     text = [
