@@ -4,6 +4,7 @@ from typing import Union
 
 from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
+from aiogram.utils.markdown import hcode
 
 from tg_bot.db_models.quick_commands import DbPayment
 from tg_bot.handlers.start import cmd_start
@@ -195,7 +196,6 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
-        print(f"input_text = {input_text}")
 
         api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
         userdata = await APIInterface.add_or_update_new_user(api_user=api_user)
@@ -295,8 +295,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         ]
 
         for adv_data in adverts_urls:
-            print(f"adv_data = {adv_data}")
-            text.append(f"{adverts_urls.index(adv_data) + 1}. {adv_data['url']}")
+            text.append(str(adverts_urls.index(adv_data) + 1) + hcode(adv_data['url']))
 
         text.extend([
             f"Для оплаты задачи сделайте перевод на сумму {price} рублей по номеру +7 (904) 084-44-92 (Альфабанк, Артём К)",

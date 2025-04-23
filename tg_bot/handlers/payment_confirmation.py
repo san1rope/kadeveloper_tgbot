@@ -36,7 +36,6 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                 telegram=uid, link=ad["url"], title=ad["title"], spend=ad["pf"] * ad["period"], limit=ad["pf"],
                 category=ad["category"], location=ad["location"]
             )
-            print(f"api_order = {api_order}")
             result = await APIInterface.add_or_update_new_task(api_order=api_order)
             if result["success"] is False:
                 logger.error("Failed to add/update task in API!")
@@ -45,7 +44,7 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                     f"Ссылка: {ad['url']}",
                     f"\nОтвет сервера: {str(result)}"
                 ]
-                return await callback.message.answer(text="\n".join(text_error))
+                return await callback.message.answer(text="\n".join(text_error), disable_web_page_preview=True)
 
             else:
                 api_id = -1
@@ -80,7 +79,7 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
 
     try:
         msg = await Config.BOT.send_message(chat_id=payment.tg_user_id, text="\n".join(text_for_user),
-                                            reply_markup=markup)
+                                            reply_markup=markup, disable_web_page_preview=True)
         await Ut.add_msg_to_delete(user_id=payment.tg_user_id, msg_id=msg.message_id)
 
     except TelegramBadRequest:
