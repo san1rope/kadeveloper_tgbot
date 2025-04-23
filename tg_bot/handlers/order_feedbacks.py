@@ -295,7 +295,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         ]
 
         for adv_data in adverts_urls:
-            text.append(str(adverts_urls.index(adv_data) + 1) + hcode(adv_data['url']))
+            text.append(str(adverts_urls.index(adv_data) + 1) + ". " + hcode(adv_data['url']))
 
         text.extend([
             f"\nДля оплаты задачи сделайте перевод на сумму {price} рублей по номеру +7 (904) 084-44-92 (Альфабанк, Артём К)",
