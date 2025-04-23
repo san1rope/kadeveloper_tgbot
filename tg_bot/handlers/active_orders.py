@@ -5,7 +5,7 @@ from aiogram import Router, F, types
 from tg_bot.db_models.quick_commands import DbOrder
 from tg_bot.keyboards.inline import InlineMarkups as Im, OrderActions, OrderActConfirmation
 from tg_bot.misc.api_interface import APIInterface
-from tg_bot.misc.models import APIOrder
+from tg_bot.misc.models import APIOrder, APIUser
 from tg_bot.misc.utils import Utils as Ut
 
 logger = logging.getLogger(__name__)
@@ -28,11 +28,25 @@ async def show_active_orders(callback: types.CallbackQuery):
     markup_main = await Im.back(callback_data="back_from_active_orders_menu")
     await Ut.send_step_message(user_id=uid, text="\n".join(text_main), markup=markup_main)
 
+    tasks = None
+    if db_orders:
+        api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
+        tasks = await APIInterface.add_or_update_new_user(api_user=api_user)
+        tasks = tasks["data"]["tasks"]
+
     for order in db_orders:
+        progress = None
+        for t in tasks:
+            if t["link"] == order.advert_url:
+                progress = (t["views"] * 100) / t["spend"]
+                break
+
         text = [
             f"Заказ #{order.id}\n",
+            f"\nПрогресс: {f'{progress}%' if progress else 'Ошибка'}"
             f"Количество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
+            f"Получено ПФ: N"
             f"Объявление: {order.advert_url}",
             "\n⬇️ Для действия над заказом используйте клавиатуру."
         ]

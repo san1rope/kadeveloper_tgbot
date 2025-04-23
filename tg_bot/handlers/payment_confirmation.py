@@ -9,7 +9,7 @@ from tg_bot.db_models.quick_commands import DbPayment, DbOrder
 from tg_bot.db_models.schemas import Payment
 from tg_bot.keyboards.inline import PaymentConfirmation, InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
-from tg_bot.misc.models import APIOrder
+from tg_bot.misc.models import APIOrder, APIUser
 from tg_bot.misc.utils import Utils as Ut
 
 logger = logging.getLogger(__name__)
@@ -63,6 +63,25 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                 ]
                 markup = await Im.payment_confirmed()
 
+                api_user = APIUser(telegram=payment.tg_user_id, name="tguser", email="tg.user@gmail.com")
+                result = await APIInterface.add_or_update_new_user(api_user=api_user)
+                if result["success"] is False:
+                    text_error = [
+                        "🔴 Не удалось получить баланс юзера!\n",
+                        f"Ссылка: {ad['url']}",
+                        f"\nОтвет сервера: {str(result)}"
+                    ]
+                    return await callback.message.answer(text="\n".join(text_error), disable_web_page_preview=True)
+
+                api_user.balance = int(result["data"]["user"]["balance"]) + payment.price
+                result = await APIInterface.add_or_update_new_user(api_user=api_user)
+                if result["success"] is False:
+                    text_error = [
+                        "🔴 Не удалось обновить баланс юзера!\n",
+                        f"Ссылка: {ad['url']}",
+                        f"\nОтвет сервера: {str(result)}"
+                    ]
+                    return await callback.message.answer(text="\n".join(text_error), disable_web_page_preview=True)
     else:
         text = [
             "🔘 Вы отменили платеж!"
