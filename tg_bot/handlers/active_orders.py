@@ -43,8 +43,8 @@ async def show_active_orders(callback: types.CallbackQuery):
                 break
 
         text = [
-            f"Заказ #{order.id}\n",
-            f"\nПрогресс: {f'{progress}%' if progress is not None else 'Ошибка'}"
+            f"Заказ #{order.id}",
+            f"\nПрогресс: {f'{progress}%' if progress is not None else 'Ошибка'}",
             f"\nКоличество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
             f"Получено ПФ: N"

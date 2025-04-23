@@ -45,7 +45,11 @@ class APIInterface:
                 answer = await response.text()
 
         result = await cls.decode_json_answer(answer)
-        logger.info(f"Request to API | get_profile | {result}")
+        text = "Request to API | get_profile"
+        if result["success"] is False:
+            text += f" | {result}"
+
+        logger.info(text)
         return result
 
     @classmethod
@@ -62,5 +66,9 @@ class APIInterface:
                 answer = await response.text()
 
         result = await cls.decode_json_answer(answer)
-        logger.info(f"Request to API | save_task | {result}")
+        text = "Request to API | save_task"
+        if result["success"] is False:
+            text += f" | {result}"
+
+        logger.info(text)
         return result
