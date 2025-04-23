@@ -47,7 +47,7 @@ async def show_active_orders(callback: types.CallbackQuery):
             f"\nПрогресс: {f'{progress}%' if progress is not None else 'Ошибка'}",
             f"\nКоличество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
-            f"Получено ПФ: N"
+            f"Получено ПФ: N",
             f"Объявление: {order.advert_url}",
             "\n⬇️ Для действия над заказом используйте клавиатуру."
         ]
