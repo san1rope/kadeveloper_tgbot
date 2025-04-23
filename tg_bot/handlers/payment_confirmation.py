@@ -23,6 +23,13 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
     logger.info(f"Handler called. {confirm_payment.__name__}. user_id={uid}")
 
     payment: Payment = await DbPayment(db_id=callback_data.payment_id).select()
+
+    try:
+        username = (await Config.BOT.get_chat(chat_id=payment.tg_user_id)).username
+
+    except TelegramBadRequest:
+        username = "Не удалось получить"
+
     if callback_data.confirm:
         text = [
             "✅ Платеж успешно подтвержден! Создаю заказ..."
@@ -39,8 +46,10 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
             result = await APIInterface.add_or_update_new_task(api_order=api_order)
             if result["success"] is False:
                 logger.error("Failed to add/update task in API!")
+                chat = await Config.BOT.get_chat(chat_id=payment.tg_user_id)
                 text_error = [
                     "🔴 Не удалось создать заказ!\n",
+                    f"Пользователь: @{username}"
                     f"Ссылка: {ad['url']}",
                     f"\nОтвет сервера: {str(result)}"
                 ]
@@ -68,6 +77,7 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                 if result["success"] is False:
                     text_error = [
                         "🔴 Не удалось получить баланс юзера!\n",
+                        f"Пользователь: @{username}",
                         f"Ссылка: {ad['url']}",
                         f"\nОтвет сервера: {str(result)}"
                     ]
@@ -78,6 +88,7 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                 if result["success"] is False:
                     text_error = [
                         "🔴 Не удалось обновить баланс юзера!\n",
+                        f"Пользователь: @{username}",
                         f"Ссылка: {ad['url']}",
                         f"\nОтвет сервера: {str(result)}"
                     ]
