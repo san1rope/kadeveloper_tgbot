@@ -1,6 +1,7 @@
 import logging
 
 from aiogram import Router, F, types
+from pydantic.v1 import NoneStr
 
 from tg_bot.db_models.quick_commands import DbOrder
 from tg_bot.keyboards.inline import InlineMarkups as Im, OrderActions, OrderActConfirmation
@@ -38,13 +39,13 @@ async def show_active_orders(callback: types.CallbackQuery):
         progress = None
         for t in tasks:
             if t["link"] == order.advert_url:
-                progress = (t["views"] * 100) / t["spend"]
+                progress = int((t["views"] * 100) / t["spend"])
                 break
 
         text = [
             f"Заказ #{order.id}\n",
-            f"\nПрогресс: {f'{progress}%' if progress else 'Ошибка'}"
-            f"Количество дней: {order.period}",
+            f"\nПрогресс: {f'{progress}%' if progress is not None else 'Ошибка'}"
+            f"\nКоличество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
             f"Получено ПФ: N"
             f"Объявление: {order.advert_url}",
