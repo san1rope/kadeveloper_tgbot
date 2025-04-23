@@ -37,8 +37,10 @@ async def show_active_orders(callback: types.CallbackQuery):
 
     for order in db_orders:
         progress = None
+        views = None
         for t in tasks:
             if t["link"] == order.advert_url:
+                views = t["views"]
                 progress = int((t["views"] * 100) / t["spend"])
                 break
 
@@ -47,7 +49,7 @@ async def show_active_orders(callback: types.CallbackQuery):
             f"\nПрогресс: {f'{progress}%' if progress is not None else 'Ошибка'}",
             f"\nКоличество дней: {order.period}",
             f"Количество ПФ: {order.pf}",
-            f"Получено ПФ: N",
+            f"Получено ПФ: {views}",
             f"Объявление: {order.advert_url}",
             "\n⬇️ Для действия над заказом используйте клавиатуру."
         ]

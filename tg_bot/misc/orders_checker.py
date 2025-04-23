@@ -44,7 +44,7 @@ async def start_orders_checker():
                         f"\nОбъявление: {order.advert_url}",
                     ]
 
-                    await Config.BOT.send_message(chat_id=order.tg_chat_id, text="\n".join(text))
+                    await Config.BOT.send_message(chat_id=last_user_id, text="\n".join(text))
 
                     for admin_id in Config.ADMINS:
                         await Config.BOT.send_message(chat_id=admin_id, text="\n".join(text))
