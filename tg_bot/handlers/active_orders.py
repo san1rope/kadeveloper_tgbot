@@ -1,7 +1,6 @@
 import logging
 
 from aiogram import Router, F, types
-from pydantic.v1 import NoneStr
 
 from tg_bot.db_models.quick_commands import DbOrder
 from tg_bot.keyboards.inline import InlineMarkups as Im, OrderActions, OrderActConfirmation
