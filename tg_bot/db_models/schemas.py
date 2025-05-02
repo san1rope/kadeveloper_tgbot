@@ -1,4 +1,4 @@
-from sqlalchemy import sql, Column, BigInteger, String, Integer
+from sqlalchemy import sql, Column, BigInteger, String, Integer, ARRAY
 
 from tg_bot.db_models.db_gino import TimedBaseModel
 
@@ -23,6 +23,20 @@ class Order(TimedBaseModel):
     period = Column(Integer, nullable=False)
     pf = Column(Integer, nullable=False)
     advert_url = Column(String, nullable=False)
+
+    query: sql.Select
+
+
+class TempOrder(TimedBaseModel):
+    __tablename__ = "temp_orders_kadeveloper_tgbot"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    tg_user_id = Column(BigInteger, nullable=False, primary_key=True)
+    current_state = Column(String)
+    period = Column(Integer)
+    pf = Column(Integer)
+    adverts_urls = Column(ARRAY(String))
+    price = Column(Integer)
 
     query: sql.Select
 

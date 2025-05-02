@@ -6,7 +6,7 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hcode
 
-from tg_bot.db_models.quick_commands import DbPayment
+from tg_bot.db_models.quick_commands import DbPayment, DbTempOrder
 from tg_bot.handlers.start import cmd_start
 from tg_bot.keyboards.inline import InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
@@ -24,6 +24,20 @@ async def choose_period(callback: types.CallbackQuery, state: FSMContext):
     await callback.answer()
     uid = callback.from_user.id
     logger.info(f"Handler called. {choose_period.__name__}. user_id={uid}")
+
+    current_state = "ChoosePeriod"
+
+    temp_order = await DbTempOrder(tg_user_id=uid).select()
+    if temp_order:
+        await temp_order.delete()
+
+    result = await DbTempOrder(tg_user_id=uid, current_state=current_state).add()
+    if not result:
+        text = [
+            "При создании ордера произошла ошибка!",
+            "Попробуйте ещё раз, либо обратитесь в поддержку."
+        ]
+        return await callback.answer(text="\n".join(text))
 
     text = [
         "📄 Создание ордера\n",
@@ -43,7 +57,7 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
     uid = message.from_user.id
     logger.info(f"Handler called. {choose_pf_quantity.__name__}. user_id={uid}")
 
-    data = await state.get_data()
+    current_state = "ChoosePFQuantity"
 
     if isinstance(message, types.CallbackQuery):
         await message.answer()
@@ -68,10 +82,13 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
         else:
             if not from_back_btn:
                 selected_period = int(cd)
-                await state.update_data(period=selected_period)
+                await DbTempOrder(tg_user_id=uid).update(period=selected_period)
+                # await state.update_data(period=selected_period)
 
             else:
-                selected_period = data.get("period")
+                temp_order = await DbTempOrder(tg_user_id=uid).select()
+                selected_period = temp_order.period
+                # selected_period = data.get("period")
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
@@ -92,7 +109,8 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
             return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
         selected_period = input_text
-        await state.update_data(period=selected_period)
+        await DbTempOrder(tg_user_id=uid).update(period=selected_period)
+        # await state.update_data(period=selected_period)
 
     else:
         return
@@ -108,6 +126,7 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
     markup = await Im.order_pf()
     await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
 
+    await DbTempOrder(tg_user_id=uid).update(current_state=current_state)
     await state.set_state(CreateOrder.ChoosePFQuantity)
 
 
@@ -117,6 +136,8 @@ async def write_advert_url(message: Union[types.CallbackQuery, types.Message], s
                            from_back_btn: bool = False):
     uid = message.from_user.id
     logger.info(f"Handler called. {write_advert_url.__name__}. user_id={uid}")
+
+    current_state = "InsertAdvertsUrls"
 
     if isinstance(message, types.CallbackQuery):
         await message.answer()
@@ -140,11 +161,13 @@ async def write_advert_url(message: Union[types.CallbackQuery, types.Message], s
         else:
             if not from_back_btn:
                 selected_pf = int(cd)
-                await state.update_data(pf=selected_pf)
+                await DbTempOrder(tg_user_id=uid).update(pf=selected_pf)
+                # await state.update_data(pf=selected_pf)
 
             else:
-                data = await state.get_data()
-                selected_pf = data.get("pf")
+                # data = await state.get_data()
+                temp_order = await DbTempOrder(tg_user_id=uid).select()
+                selected_pf = temp_order.pf
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
@@ -160,7 +183,8 @@ async def write_advert_url(message: Union[types.CallbackQuery, types.Message], s
             return await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
         selected_pf = input_text
-        await state.update_data(pf=selected_pf)
+        await DbTempOrder(tg_user_id=uid).update(pf=selected_pf)
+        # await state.update_data(pf=selected_pf)
 
     else:
         return
@@ -173,6 +197,7 @@ async def write_advert_url(message: Union[types.CallbackQuery, types.Message], s
     markup = await Im.back(callback_data="back")
     await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
 
+    await DbTempOrder(tg_user_id=uid).update(current_state=current_state)
     await state.set_state(CreateOrder.InsertAdvertsUrls)
 
 
@@ -182,7 +207,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
     uid = message.from_user.id
     logger.info(f"Handler called. {make_payment.__name__}. user_id={uid}")
 
-    data = await state.get_data()
+    current_state = "MakePayment"
+    temp_order = await DbTempOrder(tg_user_id=uid).select()
 
     if isinstance(message, types.CallbackQuery):
         await message.answer()
@@ -237,7 +263,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
                             adverts_urls.append({
                                 "url": url_sec, "title": adv_name, "category": adv_category, "location": adv_location,
-                                "period": data["period"], "pf": data["pf"]
+                                "period": temp_order.period, "pf": temp_order.pf
                             })
 
                     else:
@@ -274,20 +300,20 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
 
                         adverts_urls.append({
                             "url": input_url, "title": adv_name, "category": adv_category, "location": adv_location,
-                            "period": data["period"], "pf": data["pf"]
+                            "period": temp_order.period, "pf": temp_order.pf
                         })
 
                 else:
                     if input_url not in wrong_urls:
                         wrong_urls.append(input_url)
 
-        await state.update_data(adverts_urls=adverts_urls)
+        await DbTempOrder(tg_user_id=uid).update(adverts_urls=adverts_urls)
+        # await state.update_data(adverts_urls=adverts_urls)
 
     else:
         return
 
-    data = await state.get_data()
-    price = (data["pf"] * data["period"]) * len(adverts_urls)
+    price = (temp_order.pf * temp_order.period) * len(adverts_urls)
 
     if adverts_urls:
         text = [
@@ -326,7 +352,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         msg = await message.answer(text="\n".join(ex_text), disable_web_page_preview=True)
         await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
-    await state.update_data(price=price)
+    # await state.update_data(price=price, current_state=current_state)
+    await DbTempOrder(tg_user_id=uid).update(price=price, current_state=current_state)
     await state.set_state(CreateOrder.MakePayment)
 
 
@@ -341,11 +368,12 @@ async def payment_confirmation(callback: types.CallbackQuery, state: FSMContext)
         return await write_advert_url(message=callback, state=state, from_back_btn=True)
 
     elif cd == "payment_completed":
-        data = await state.get_data()
+        temp_order = await DbTempOrder(tg_user_id=uid).select()
+        # data = await state.get_data()
 
-        payment_data = {"data": data["adverts_urls"]}
+        payment_data = {"data": temp_order.adverts_urls}
         payment = await DbPayment(tg_user_id=uid, confirmation=0, data=json.dumps(payment_data),
-                                  price=data["price"]).add()
+                                  price=temp_order.price).add()
         if payment:
             text = [
                 "✅ Ваша заявка была отправлена администратору!\n",
@@ -354,9 +382,11 @@ async def payment_confirmation(callback: types.CallbackQuery, state: FSMContext)
             ]
             markup = await Im.order_created()
             await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+            temp_order = await DbTempOrder(tg_user_id=uid).select()
+            await temp_order.delete()
             await state.clear()
 
-            await Ut.send_payment_confirmation_to_admins(payment=payment, price=data["price"])
+            await Ut.send_payment_confirmation_to_admins(payment=payment, price=temp_order.price)
 
         else:
             text = [

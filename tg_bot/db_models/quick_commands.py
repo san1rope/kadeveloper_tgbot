@@ -145,6 +145,74 @@ class DbOrder:
             return False
 
 
+class DbTempOrder:
+    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None,
+                 current_state: Optional[str] = None, period: Optional[int] = None, pf: Optional[int] = None,
+                 adverts_urls: Optional[List[str]] = None, price: Optional[float] = None):
+        self.db_id = db_id
+        self.tg_user_id = tg_user_id
+        self.current_state = current_state
+        self.period = period
+        self.pf = pf
+        self.adverts_urls = adverts_urls
+        self.price = price
+
+    async def add(self) -> Union[TempOrder, bool]:
+        try:
+            target = TempOrder(tg_user_id=self.tg_user_id, current_state=self.current_state, period=self.period,
+                               pf=self.pf, adverts_urls=self.adverts_urls, price=self.price)
+            return await target.create()
+
+        except UniqueViolationError:
+            return False
+
+    async def select(self) -> Union[bool, TempOrder, List[TempOrder], None]:
+        try:
+            q = TempOrder.query
+
+            if self.db_id is not None:
+                return await q.where(TempOrder.id == self.db_id).gino.first()
+
+            elif self.tg_user_id is not None:
+                return await q.where(TempOrder.tg_user_id == self.tg_user_id).gino.first()
+
+            else:
+                return await q.gino.all()
+
+        except Exception:
+            logger.error(traceback.format_exc())
+            return False
+
+    async def update(self, **kwargs) -> bool:
+        try:
+            if not kwargs:
+                return False
+
+            target = await self.select()
+            return await target.update(**kwargs).apply()
+
+        except Exception:
+            logger.error(traceback.format_exc())
+            return False
+
+    # async def remove(self) -> Union[bool, List[bool]]:
+    #     try:
+    #         target = await self.select()
+    #         if isinstance(target, list):
+    #             results = []
+    #             for i in target:
+    #                 results.append(await i.delete())
+    #
+    #             return results
+    #
+    #         elif isinstance(target, TempOrder):
+    #             return await target.delete()
+    #
+    #     except Exception:
+    #         logger.error(traceback.format_exc())
+    #         return False
+
+
 class DbPayment:
     def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None, price: Optional[int] = None,
                  confirmation: Optional[int] = None, data: Optional[str] = None):
