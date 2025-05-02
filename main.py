@@ -30,9 +30,9 @@ async def main():
     await Config.BOT.set_my_commands(commands=bot_commands)
     await Config.BOT.delete_webhook(drop_pending_updates=True)
 
-    Process(target=Ut.wrapper, args=(check_user_states,)).start()
     Process(target=Ut.wrapper, args=(start_orders_checker,)).start()
 
+    await check_user_states()
     await Config.DISPATCHER.start_polling(Config.BOT, allowed_updates=Config.DISPATCHER.resolve_used_update_types())
 
 
