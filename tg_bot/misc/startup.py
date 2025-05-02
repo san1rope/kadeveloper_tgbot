@@ -21,10 +21,14 @@ async def check_user_states():
     for t_order in temp_orders:
         t_order: TempOrder
 
-        new_key = StorageKey(user_id=t_order.tg_user_id, chat_id=t_order.tg_user_id, bot_id=Config.BOT.id)
-        new_state = FSMContext(storage=MemoryStorage(), key=new_key)
-
+        storage: MemoryStorage = Config.DISPATCHER.storage
+        key = StorageKey(bot_id=Config.BOT.id, chat_id=t_order.tg_user_id, user_id=t_order.tg_user_id)
         state_to_set = getattr(CreateOrder, t_order.current_state)
-        print(f"state_to_set = {state_to_set}")
-        await new_state.set_state(state_to_set)
+        await storage.set_state(key=key, state=state_to_set)
+
+        # new_key = StorageKey(user_id=t_order.tg_user_id, chat_id=t_order.tg_user_id, bot_id=Config.BOT.id)
+        # new_state = FSMContext(storage=MemoryStorage(), key=new_key)
+        #
+        # state_to_set = getattr(CreateOrder, t_order.current_state)
+        # await new_state.set_state(state_to_set)
         logging.info(f"Установил состояние для {t_order.tg_user_id}")
