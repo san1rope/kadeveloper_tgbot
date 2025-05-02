@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 
 from config import Config
 from tg_bot.db_models.quick_commands import DbMessageId
-from tg_bot.db_models.schemas import Payment
+from tg_bot.db_models.schemas import Payment, MessageId
 from tg_bot.keyboards.inline import InlineMarkups as Im
 
 logger = logging.getLogger(__name__)
@@ -126,6 +126,14 @@ class Utils:
                 db_messages = await DbMessageId().select()
 
             for db_msg in db_messages:
+                db_msg: MessageId
+
+                try:
+                    await Config.BOT.delete_message(chat_id=db_msg.tg_user_id, message_id=db_msg.telegram_id)
+
+                except TelegramBadRequest:
+                    continue
+
                 await db_msg.delete()
 
         except KeyError:
