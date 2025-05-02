@@ -59,6 +59,10 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
 
     current_state = "ChoosePFQuantity"
 
+    print("STATE_ ----------")
+    print(f"state = {state}")
+    print(f"key = {state.key.user_id}; {state.key.chat_id}; {state.key.bot_id}; {state.key.destiny}; {state.key.thread_id}")
+
     if isinstance(message, types.CallbackQuery):
         await message.answer()
         cd = message.data
