@@ -4,14 +4,14 @@ from aiogram.fsm.storage.memory import MemoryStorage
 
 from config import Config
 from tg_bot.db_models.db_gino import connect_to_db
-from tg_bot.db_models.quick_commands import TempOrder
+from tg_bot.db_models.quick_commands import DbTempOrder, TempOrder
 from tg_bot.misc.states import CreateOrder
 
 
 async def check_user_states():
     await connect_to_db(remove_data=False)
 
-    temp_orders = await TempOrder().select()
+    temp_orders = await DbTempOrder().select()
     for t_order in temp_orders:
         t_order: TempOrder
 
