@@ -15,7 +15,7 @@ async def check_user_states():
     for t_order in temp_orders:
         t_order: TempOrder
 
-        new_key = StorageKey(user_id=t_order.tg_user_id, chat_id=t_order.chat_id, bot_id=Config.BOT.id)
+        new_key = StorageKey(user_id=t_order.tg_user_id, chat_id=t_order.tg_user_id, bot_id=Config.BOT.id)
         new_state = FSMContext(storage=MemoryStorage(), key=new_key)
 
         state_to_set = getattr(CreateOrder, t_order.current_state)
