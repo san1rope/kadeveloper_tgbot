@@ -195,22 +195,38 @@ class DbTempOrder:
             logger.error(traceback.format_exc())
             return False
 
-    # async def remove(self) -> Union[bool, List[bool]]:
-    #     try:
-    #         target = await self.select()
-    #         if isinstance(target, list):
-    #             results = []
-    #             for i in target:
-    #                 results.append(await i.delete())
-    #
-    #             return results
-    #
-    #         elif isinstance(target, TempOrder):
-    #             return await target.delete()
-    #
-    #     except Exception:
-    #         logger.error(traceback.format_exc())
-    #         return False
+
+class DbMessageId:
+    def __init__(self, db_id: Optional[int] = None, tg_user_id: Optional[int] = None,
+                 telegram_id: Optional[int] = None):
+        self.db_id = db_id
+        self.tg_user_id = tg_user_id
+        self.telegram_id = telegram_id
+
+    async def add(self) -> Union[MessageId, bool]:
+        try:
+            target = MessageId(tg_user_id=self.tg_user_id, telegram_id=self.telegram_id)
+            return await target.create()
+
+        except UniqueViolationError:
+            return False
+
+    async def select(self):
+        try:
+            q = MessageId.query
+
+            if self.db_id:
+                return await q.where(MessageId.id == self.db_id).gino.first()
+
+            elif self.tg_user_id:
+                return await q.where(MessageId.tg_user_id == self.tg_user_id).gino.all()
+
+            else:
+                return await q.gino.all()
+
+        except Exception:
+            logger.error(traceback.format_exc())
+            return False
 
 
 class DbPayment:

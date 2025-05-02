@@ -41,6 +41,16 @@ class TempOrder(TimedBaseModel):
     query: sql.Select
 
 
+class MessageId(TimedBaseModel):
+    __tablename__ = "messages_kadeveloper_tgbot"
+
+    id = Column(BigInteger, primary_key=True, autoincrement=True)
+    tg_user_id = Column(BigInteger, nullable=False)
+    telegram_id = Column(BigInteger, nullable=False)
+
+    query: sql.Select
+
+
 class Payment(TimedBaseModel):
     __tablename__ = "payments_kadeveloper_tgbot"
 
