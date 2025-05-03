@@ -39,6 +39,9 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
 
         order_data = json.loads(payment.data)
         for ad in order_data["data"]:
+            # ad = json.loads(ad)
+            print(f" ad = {ad}")
+
             api_order = APIOrder(
                 telegram=uid, link=ad["url"], title=ad["title"], spend=ad["pf"] * ad["period"], limit=ad["pf"],
                 category=ad["category"], location=ad["location"]

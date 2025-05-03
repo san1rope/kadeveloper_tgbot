@@ -265,10 +265,10 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                                 await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
                                 continue
 
-                            adverts_urls.append({
+                            adverts_urls.append(str({
                                 "url": url_sec, "title": adv_name, "category": adv_category, "location": adv_location,
                                 "period": temp_order.period, "pf": temp_order.pf
-                            })
+                            }))
 
                     else:
                         if url_sec not in wrong_urls:
@@ -302,16 +302,16 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                             await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
                             return
 
-                        adverts_urls.append({
+                        adverts_urls.append(str({
                             "url": input_url, "title": adv_name, "category": adv_category, "location": adv_location,
                             "period": temp_order.period, "pf": temp_order.pf
-                        })
+                        }))
 
                 else:
                     if input_url not in wrong_urls:
                         wrong_urls.append(input_url)
 
-        await DbTempOrder(tg_user_id=uid).update(adverts_urls=adverts_urls)
+        result = await DbTempOrder(tg_user_id=uid).update(adverts_urls=adverts_urls)
         # await state.update_data(adverts_urls=adverts_urls)
 
     else:
