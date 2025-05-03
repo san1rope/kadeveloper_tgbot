@@ -311,7 +311,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                     if input_url not in wrong_urls:
                         wrong_urls.append(input_url)
 
-        result = await DbTempOrder(tg_user_id=uid).update(adverts_urls=adverts_urls)
+        await DbTempOrder(tg_user_id=uid).update(adverts_urls=adverts_urls)
         # await state.update_data(adverts_urls=adverts_urls)
 
     else:
@@ -326,7 +326,8 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         ]
 
         for adv_data in adverts_urls:
-            text.append(str(adverts_urls.index(adv_data) + 1) + ". " + hcode(adv_data['url']))
+            adv_data_dict = json.loads(adv_data)
+            text.append(str(adverts_urls.index(adv_data) + 1) + ". " + hcode(adv_data_dict['url']))
 
         text.extend([
             f"\nДля оплаты задачи сделайте перевод на сумму {price} рублей по номеру +7 (904) 084-44-92 (Альфабанк, Артём К)",
