@@ -40,7 +40,6 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
         order_data = json.loads(payment.data)
         for ad in order_data["data"]:
             ad = json.loads(ad)
-            print(f" ad = {ad}")
 
             api_order = APIOrder(
                 telegram=uid, link=ad["url"], title=ad["title"], spend=ad["pf"] * ad["period"], limit=ad["pf"],
@@ -49,7 +48,6 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
             result = await APIInterface.add_or_update_new_task(api_order=api_order)
             if result["success"] is False:
                 logger.error("Failed to add/update task in API!")
-                chat = await Config.BOT.get_chat(chat_id=payment.tg_user_id)
                 text_error = [
                     "🔴 Не удалось создать заказ!\n",
                     f"Пользователь: @{username}"
