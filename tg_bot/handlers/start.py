@@ -40,10 +40,9 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
     username = message.from_user.username
 
     currency_text = "рубл"
-    decs = balance % 100
     ods = balance % 10
 
-    if decs in [11, 12, 13, 14]:
+    if balance in [11, 12, 13, 14]:
         currency_text += "ей"
 
     else:
