@@ -317,7 +317,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
     else:
         return
 
-    price = (temp_order.pf * temp_order.period) * len(adverts_urls)
+    price = ((temp_order.pf * temp_order.period) * len(adverts_urls)) * 4
 
     if adverts_urls:
         text = [
