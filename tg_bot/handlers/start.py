@@ -41,6 +41,7 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
 
     currency_text = "рубл"
     ods = balance % 10
+    print(f"ods = {ods}")
     if ods == 1:
         currency_text += "ь"
 
