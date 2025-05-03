@@ -265,7 +265,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                                 await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
                                 continue
 
-                            adverts_urls.append(str({
+                            adverts_urls.append(json.dumps({
                                 "url": url_sec, "title": adv_name, "category": adv_category, "location": adv_location,
                                 "period": temp_order.period, "pf": temp_order.pf
                             }))
@@ -302,7 +302,7 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                             await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
                             return
 
-                        adverts_urls.append(str({
+                        adverts_urls.append(json.dumps({
                             "url": input_url, "title": adv_name, "category": adv_category, "location": adv_location,
                             "period": temp_order.period, "pf": temp_order.pf
                         }))
