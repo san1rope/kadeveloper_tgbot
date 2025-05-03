@@ -35,6 +35,7 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
     api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
     result = await APIInterface.add_or_update_new_user(api_user=api_user)
     balance = int(result['data']['user']['balance'])
+    print(f"balance = {balance}")
 
     username = message.from_user.username
 
