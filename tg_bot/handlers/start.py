@@ -34,9 +34,21 @@ async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
 
     api_user = APIUser(telegram=uid, name="tguser", email="tg.user@gmail.com")
     result = await APIInterface.add_or_update_new_user(api_user=api_user)
-    balance = result['data']['user']['balance']
+    balance = int(result['data']['user']['balance'])
 
     username = message.from_user.username
+
+    currency_text = "рубл"
+    ods = balance % 10
+    if ods == 1:
+        currency_text += "ь"
+
+    elif ods in [2, 3, 4]:
+        currency_text += "я"
+
+    else:
+        currency_text += "ей"
+
     text = [
         f"👋 Приветствую{f', {username}' if username else ''}! Баланс {balance} рублей.\n",
         """🚀Взлетайте в ТОП и рекомендации Авито с нашим ботом!
