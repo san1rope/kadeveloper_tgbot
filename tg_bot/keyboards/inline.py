@@ -150,12 +150,16 @@ class InlineMarkups:
                                          callback_data=CommonQuestions(question_id=1).pack())
                 ],
                 [
-                    InlineKeyboardButton(text="Лучшая методика накрутки",
+                    InlineKeyboardButton(text="Можно ли получить бан за накрутку ПФ",
                                          callback_data=CommonQuestions(question_id=2).pack())
                 ],
                 [
-                    InlineKeyboardButton(text="ПФ на объявления в аккаунте одним днём",
+                    InlineKeyboardButton(text="Лучшая методика накрутки",
                                          callback_data=CommonQuestions(question_id=3).pack())
+                ],
+                [
+                    InlineKeyboardButton(text="ПФ сразу на все объявления",
+                                         callback_data=CommonQuestions(question_id=4).pack())
                 ],
                 [
                     InlineKeyboardButton(text="Задать вопрос", url=Config.SUPPORT_TELEGRAM_URL)

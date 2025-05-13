@@ -73,18 +73,8 @@ async def confirm_payment(callback: types.CallbackQuery, callback_data: PaymentC
                 ]
                 markup = await Im.payment_confirmed()
 
-                api_user = APIUser(telegram=payment.tg_user_id, name="tguser", email="tg.user@gmail.com")
-                result = await APIInterface.add_or_update_new_user(api_user=api_user)
-                if result["success"] is False:
-                    text_error = [
-                        "🔴 Не удалось получить баланс юзера!\n",
-                        f"Пользователь: @{username}",
-                        f"Ссылка: {ad['url']}",
-                        f"\nОтвет сервера: {str(result)}"
-                    ]
-                    return await callback.message.answer(text="\n".join(text_error), disable_web_page_preview=True)
-
-                api_user.balance = int(result["data"]["user"]["balance"]) + payment.price
+                api_user = APIUser(telegram=payment.tg_user_id, name="tguser", email="tg.user@gmail.com",
+                                   change_balance=payment.price)
                 result = await APIInterface.add_or_update_new_user(api_user=api_user)
                 if result["success"] is False:
                     text_error = [

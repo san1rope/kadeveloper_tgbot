@@ -36,7 +36,6 @@ async def start_orders_checker():
 
             for task in user_data["data"]["tasks"]:
                 if task["link"] == order.advert_url and task["views"] == task["spend"]:
-                    print("COMPLETE")
                     await DbOrder(db_id=order.id).update(status=1)
                     text = [
                         f"✅ Задание #{order.id} выполнено!",

@@ -1,10 +1,11 @@
 import logging
-from typing import Union
+from typing import Union, Optional
 
 from aiogram import Router, F, types, enums
 from aiogram.filters import CommandStart
+from aiogram.fsm.context import FSMContext
 
-from tg_bot.db_models.quick_commands import DbOrder
+from tg_bot.db_models.quick_commands import DbOrder, DbTempOrder
 from tg_bot.keyboards.inline import InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
 from tg_bot.misc.models import APIUser
@@ -19,13 +20,20 @@ router = Router()
 @router.callback_query(F.data == "back_from_how_to_start")
 @router.callback_query(F.data == "back_from_questions_menu")
 @router.callback_query(F.data == "back_from_active_orders_menu")
-async def cmd_start(message: Union[types.Message, types.CallbackQuery]):
+async def cmd_start(message: Union[types.Message, types.CallbackQuery], state: Optional[FSMContext] = None):
     uid = message.from_user.id
     logger.info(f"Handler called. {cmd_start.__name__}. user_id={uid}")
+
+    if isinstance(state, FSMContext):
+        await state.clear()
 
     if isinstance(message, types.CallbackQuery):
         await message.answer()
         message = message.message
+
+    temp_order = await DbTempOrder(tg_user_id=uid).select()
+    if temp_order:
+        await temp_order.delete()
 
     text = [
         "Получаю данные о пользователе..."

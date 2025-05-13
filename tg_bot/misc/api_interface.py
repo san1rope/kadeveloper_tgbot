@@ -1,9 +1,9 @@
 import json
 import logging
 import base64
-from typing import Dict, Any
+from typing import Dict
 
-from aiohttp import BasicAuth, ClientSession
+from aiohttp import ClientSession
 
 from config import Config
 from tg_bot.misc.models import APIUser, APIOrder

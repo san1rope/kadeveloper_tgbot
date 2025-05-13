@@ -6,11 +6,11 @@ from aiogram import Router, F, types
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hcode
 
-from tg_bot.db_models.quick_commands import DbPayment, DbTempOrder
+from tg_bot.db_models.quick_commands import DbPayment, DbTempOrder, DbOrder
 from tg_bot.handlers.start import cmd_start
 from tg_bot.keyboards.inline import InlineMarkups as Im
 from tg_bot.misc.api_interface import APIInterface
-from tg_bot.misc.models import APIUser
+from tg_bot.misc.models import APIUser, APIOrder
 from tg_bot.misc.states import CreateOrder
 from tg_bot.misc.utils import Utils as Ut
 
@@ -59,10 +59,6 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
 
     current_state = "ChoosePFQuantity"
 
-    print("STATE_ ----------")
-    print(f"state = {state}")
-    print(f"key = {state.key.user_id}; {state.key.chat_id}; {state.key.bot_id}; {state.key.destiny}; {state.key.thread_id}")
-
     if isinstance(message, types.CallbackQuery):
         await message.answer()
         cd = message.data
@@ -87,12 +83,10 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
             if not from_back_btn:
                 selected_period = int(cd)
                 await DbTempOrder(tg_user_id=uid).update(period=selected_period)
-                # await state.update_data(period=selected_period)
 
             else:
                 temp_order = await DbTempOrder(tg_user_id=uid).select()
                 selected_period = temp_order.period
-                # selected_period = data.get("period")
 
     elif isinstance(message, types.Message):
         input_text = message.text.strip()
@@ -114,7 +108,6 @@ async def choose_pf_quantity(message: [types.CallbackQuery, types.Message], stat
 
         selected_period = input_text
         await DbTempOrder(tg_user_id=uid).update(period=selected_period)
-        # await state.update_data(period=selected_period)
 
     else:
         return
@@ -166,10 +159,8 @@ async def write_advert_url(message: Union[types.CallbackQuery, types.Message], s
             if not from_back_btn:
                 selected_pf = int(cd)
                 await DbTempOrder(tg_user_id=uid).update(pf=selected_pf)
-                # await state.update_data(pf=selected_pf)
 
             else:
-                # data = await state.get_data()
                 temp_order = await DbTempOrder(tg_user_id=uid).select()
                 selected_pf = temp_order.pf
 
@@ -188,7 +179,6 @@ async def write_advert_url(message: Union[types.CallbackQuery, types.Message], s
 
         selected_pf = input_text
         await DbTempOrder(tg_user_id=uid).update(pf=selected_pf)
-        # await state.update_data(pf=selected_pf)
 
     else:
         return
@@ -312,7 +302,6 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
                         wrong_urls.append(input_url)
 
         await DbTempOrder(tg_user_id=uid).update(adverts_urls=adverts_urls)
-        # await state.update_data(adverts_urls=adverts_urls)
 
     else:
         return
@@ -320,6 +309,54 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
     price = ((temp_order.pf * temp_order.period) * len(adverts_urls)) * 4
 
     if adverts_urls:
+        if int(userdata["data"]["user"]["balance"]) >= price:
+            userdata = await APIInterface.add_or_update_new_user(api_user=api_user)
+
+            text = [
+                "✅ Заказы были успешно созданы по следующим ссылкам:\n",
+            ]
+
+            for adv in adverts_urls:
+                adv = json.loads(adv)
+                api_order = APIOrder(
+                    telegram=uid, link=adv["url"], title=adv["title"], spend=adv["pf"] * adv["period"], limit=adv["pf"],
+                    category=adv["category"], location=adv["location"]
+                )
+                result = await APIInterface.add_or_update_new_task(api_order=api_order)
+                if result["success"] is False:
+                    text_error = [
+                        "🔴 Не удалось обновить баланс юзера!\n",
+                        f"Ссылка: {adv['url']}",
+                    ]
+                    await message.answer(text="\n".join(text_error), disable_web_page_preview=True)
+
+                else:
+                    text.append(adv["url"])
+                    api_id = -1
+                    for task in result["data"]["tasks"]:
+                        if task["link"] == adv['url']:
+                            api_id = int(task["id"])
+                            break
+
+                    db_order = await DbOrder(
+                        tg_user_id=uid, api_id=api_id, status=0, period=adv["period"], pf=adv["pf"],
+                        advert_url=adv['url']).add()
+
+            if wrong_urls:
+                text_wrong_urls = [
+                    "🔴 Остальные ссылки были не распознаны!",
+                    "💭 Ссылка должна начинаться на https://avito.ru/",
+                    "\nℹ️ Чтобы вставить 2 и более ссылки, используйте перенос строки (Ctrl + Enter) или пробел (Space)\n"
+                ]
+                text.extend("\n".join(text_wrong_urls))
+
+            markup = await Im.order_created()
+            await Ut.send_step_message(user_id=uid, text="\n".join(text), markup=markup)
+
+            await state.clear()
+            await temp_order.delete()
+            return
+
         text = [
             "📄 Создание ордера\n",
             f"🖊 Введенные вами ссылки:",
@@ -357,7 +394,6 @@ async def make_payment(message: Union[types.Message, types.CallbackQuery], state
         msg = await message.answer(text="\n".join(ex_text), disable_web_page_preview=True)
         await Ut.add_msg_to_delete(user_id=uid, msg_id=msg.message_id)
 
-    # await state.update_data(price=price, current_state=current_state)
     await DbTempOrder(tg_user_id=uid).update(price=price, current_state=current_state)
     await state.set_state(CreateOrder.MakePayment)
 
@@ -374,7 +410,6 @@ async def payment_confirmation(callback: types.CallbackQuery, state: FSMContext)
 
     elif cd == "payment_completed":
         temp_order = await DbTempOrder(tg_user_id=uid).select()
-        # data = await state.get_data()
 
         payment_data = {"data": temp_order.adverts_urls}
         payment = await DbPayment(tg_user_id=uid, confirmation=0, data=json.dumps(payment_data),

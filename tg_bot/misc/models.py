@@ -7,7 +7,7 @@ class APIUser(BaseModel):
     telegram: Union[str, int]
     name: Optional[str] = None
     email: Optional[str] = None
-    balance: Optional[int] = None
+    change_balance: Optional[int] = None
 
 
 class APIOrder(BaseModel):
